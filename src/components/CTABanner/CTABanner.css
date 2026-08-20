@@ -48,6 +48,8 @@
   border-radius: var(--radius-full);
   transition: background var(--transition-fast), transform var(--transition-fast),
     box-shadow var(--transition-fast);
+  border: none;
+  cursor: pointer;
 }
 
 .cta-banner__btn:hover {

@@ -1,9 +1,11 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import './CTABanner.css'
 
 export default function CTABanner() {
+  const navigate = useNavigate()
+  
   return (
     <section className="cta-banner" id="cta-banner">
       <div className="cta-banner__inner container">
@@ -23,10 +25,10 @@ export default function CTABanner() {
             </p>
           </div>
           <div className="cta-banner__actions">
-            <Link to="/submit" className="cta-banner__btn" id="cta-build-cv">
-              Build your CV
+            <button onClick={() => navigate('/submit')} className="cta-banner__btn" id="cta-build-cv">
+              Build your Resume
               <ArrowRight size={18} />
-            </Link>
+            </button>
           </div>
 
           {/* Decorative elements */}

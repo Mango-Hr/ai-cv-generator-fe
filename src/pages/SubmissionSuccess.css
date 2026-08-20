@@ -1,0 +1,250 @@
+/* ============================================
+   Submission Success Page
+   ============================================ */
+
+.submission-success {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-top: var(--header-height);
+}
+
+.submission-success__container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-4);
+  text-align: center;
+}
+
+/* ============================================
+   Success Icon
+   ============================================ */
+
+.submission-success__icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-6);
+  color: var(--color-success);
+}
+
+/* ============================================
+   Text Content
+   ============================================ */
+
+.submission-success__title {
+  font-size: var(--text-4xl);
+  font-weight: 650;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.submission-success__description {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-8);
+}
+
+/* ============================================
+   Submission ID Card
+   ============================================ */
+
+.submission-success__id-card {
+  margin-bottom: var(--space-10);
+}
+
+.submission-success__id {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  text-align: left;
+}
+
+.submission-success__id-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.submission-success__id-value {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  margin-bottom: var(--space-1);
+}
+
+.submission-success__id-hint {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================
+   Next Steps
+   ============================================ */
+
+.submission-success__steps {
+  margin-bottom: var(--space-10);
+  text-align: left;
+}
+
+.submission-success__steps-title {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-6);
+  text-align: center;
+}
+
+.submission-success__steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.submission-success__step {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.submission-success__step-number {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-deco-blue);
+  color: white;
+  font-weight: 600;
+  font-size: var(--text-lg);
+}
+
+.submission-success__step-content {
+  flex: 1;
+  padding-top: var(--space-1);
+}
+
+.submission-success__step-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.submission-success__step-description {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+/* ============================================
+   CTA Section
+   ============================================ */
+
+.submission-success__cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(168, 85, 247, 0.08));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-8);
+  text-align: left;
+}
+
+.submission-success__cta-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+}
+
+.submission-success__cta-icon {
+  color: var(--color-deco-blue);
+  flex-shrink: 0;
+}
+
+.submission-success__cta-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.submission-success__cta-description {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+
+.submission-success__footer {
+  display: flex;
+  justify-content: center;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  .submission-success__container {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .submission-success__title {
+    font-size: var(--text-3xl);
+  }
+
+  .submission-success__description {
+    font-size: var(--text-base);
+  }
+
+  .submission-success__id {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .submission-success__id-value {
+    font-size: var(--text-xl);
+  }
+
+  .submission-success__cta {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .submission-success__cta-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .submission-success__cta button {
+    width: 100%;
+  }
+
+  .submission-success__step-number {
+    width: 32px;
+    height: 32px;
+    font-size: var(--text-base);
+  }
+
+  .submission-success__step-title {
+    font-size: var(--text-base);
+  }
+
+  .submission-success__step-description {
+    font-size: var(--text-sm);
+  }
+}

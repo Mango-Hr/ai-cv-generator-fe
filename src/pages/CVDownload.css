@@ -1,0 +1,421 @@
+/* ============================================
+   CV Download Page
+   ============================================ */
+
+.cv-download {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-top: var(--header-height);
+}
+
+.cv-download__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+}
+
+/* ============================================
+   Header
+   ============================================ */
+
+.cv-download__header {
+  margin-bottom: var(--space-8);
+}
+
+.cv-download__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+  transition: color var(--transition-fast);
+}
+
+.cv-download__back:hover {
+  color: var(--color-text-primary);
+}
+
+.cv-download__title {
+  font-size: var(--text-4xl);
+  font-weight: 650;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.cv-download__subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+/* ============================================
+   Main Content
+   ============================================ */
+
+.cv-download__content {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--space-8);
+}
+
+/* ============================================
+   Preview Section
+   ============================================ */
+
+.cv-download__preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cv-download__preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.cv-download__preview-title {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.cv-download__zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cv-download__zoom-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: 
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.cv-download__zoom-btn:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-text-tertiary);
+}
+
+.cv-download__zoom-level {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Browser Mockup for CV Preview */
+.cv-download__mockup {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.cv-download__mockup-chrome {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cv-download__mockup-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.cv-download__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.cv-download__dot--red {
+  background: #ff5f57;
+}
+
+.cv-download__dot--yellow {
+  background: #febc2e;
+}
+
+.cv-download__dot--green {
+  background: #28c840;
+}
+
+.cv-download__mockup-title {
+  flex: 1;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+/* CV Preview Content */
+.cv-download__preview-content {
+  padding: var(--space-8);
+  background: white;
+  min-height: 600px;
+  max-height: 800px;
+  overflow-y: auto;
+  transition: transform var(--transition-base);
+}
+
+.cv-download__preview-content--zoom-out {
+  transform: scale(0.9);
+  transform-origin: top center;
+}
+
+.cv-download__preview-content--zoom-in {
+  transform: scale(1.1);
+  transform-origin: top center;
+}
+
+/* Mock CV Content */
+.cv-download__cv-mock {
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: Georgia, serif;
+  color: #1a1a1a;
+}
+
+.cv-download__cv-header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 2px solid #1a1a1a;
+}
+
+.cv-download__cv-name {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+  color: #1a1a1a;
+}
+
+.cv-download__cv-title {
+  font-size: 1.125rem;
+  color: #666;
+  margin-bottom: var(--space-2);
+}
+
+.cv-download__cv-contact {
+  font-size: 0.875rem;
+  color: #666;
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.cv-download__cv-section {
+  margin-bottom: var(--space-6);
+}
+
+.cv-download__cv-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+  color: #1a1a1a;
+}
+
+.cv-download__cv-item {
+  margin-bottom: var(--space-4);
+}
+
+.cv-download__cv-item-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+}
+
+.cv-download__cv-item-title {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.cv-download__cv-item-date {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.cv-download__cv-item-subtitle {
+  color: #666;
+  margin-bottom: var(--space-2);
+}
+
+.cv-download__cv-item-description {
+  line-height: 1.6;
+  color: #333;
+  font-size: 0.9375rem;
+}
+
+.cv-download__cv-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.cv-download__cv-skill {
+  padding: 4px 12px;
+  background: #f5f5f5;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  color: #333;
+}
+
+/* ============================================
+   Sidebar
+   ============================================ */
+
+.cv-download__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Download Card */
+.cv-download__download-card {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-4));
+}
+
+.cv-download__download-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cv-download__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.cv-download__option:hover {
+  border-color: var(--color-deco-blue);
+  background: rgba(59, 130, 246, 0.04);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.cv-download__option-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cv-download__option-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  flex-shrink: 0;
+}
+
+.cv-download__option-icon--pdf {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.cv-download__option-icon--word {
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.cv-download__option-icon--latex {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+}
+
+.cv-download__option-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cv-download__option-name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: var(--text-base);
+}
+
+.cv-download__option-format {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.cv-download__option-arrow {
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .cv-download__content {
+    grid-template-columns: 1fr;
+  }
+
+  .cv-download__sidebar {
+    order: -1;
+  }
+
+  .cv-download__download-card {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .cv-download__container {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .cv-download__title {
+    font-size: var(--text-3xl);
+  }
+
+  .cv-download__subtitle {
+    font-size: var(--text-base);
+  }
+
+  .cv-download__preview-content {
+    padding: var(--space-4);
+  }
+
+  .cv-download__cv-name {
+    font-size: 1.5rem;
+  }
+
+  .cv-download__cv-title {
+    font-size: 1rem;
+  }
+
+  .cv-download__cv-contact {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+}

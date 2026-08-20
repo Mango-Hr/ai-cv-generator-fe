@@ -1,0 +1,358 @@
+/* ============================================
+   CV Submission Page
+   Multi-step form for client submissions
+   ============================================ */
+
+.submit-cv {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-top: var(--header-height);
+}
+
+.submit-cv__container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+}
+
+/* ============================================
+   Header Section
+   ============================================ */
+
+.submit-cv__header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.submit-cv__title {
+  font-size: var(--text-4xl);
+  font-weight: 650;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.submit-cv__subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   Progress Indicator
+   ============================================ */
+
+.submit-cv__progress {
+  margin-bottom: var(--space-10);
+}
+
+.submit-cv__steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: var(--space-2);
+}
+
+.submit-cv__steps::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-border-light);
+  z-index: 0;
+}
+
+.submit-cv__step-line {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  height: 2px;
+  background: var(--color-deco-blue);
+  z-index: 1;
+  transition: width var(--transition-base);
+}
+
+.submit-cv__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  position: relative;
+  z-index: 2;
+}
+
+.submit-cv__step-circle {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  transition: all var(--transition-fast);
+}
+
+.submit-cv__step--completed .submit-cv__step-circle {
+  background: var(--color-deco-blue);
+  border-color: var(--color-deco-blue);
+  color: white;
+}
+
+.submit-cv__step--active .submit-cv__step-circle {
+  border-color: var(--color-deco-blue);
+  border-width: 3px;
+  color: var(--color-deco-blue);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.submit-cv__step-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  font-weight: 500;
+}
+
+.submit-cv__step--active .submit-cv__step-label {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* ============================================
+   Form Card
+   ============================================ */
+
+.submit-cv__form-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+}
+
+.submit-cv__form-title {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.submit-cv__form-description {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-6);
+}
+
+.submit-cv__form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.submit-cv__form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+/* ============================================
+   Form Actions
+   ============================================ */
+
+.submit-cv__actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.submit-cv__actions-left {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.submit-cv__actions-right {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* ============================================
+   Experience/Education Items
+   ============================================ */
+
+.submit-cv__items-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.submit-cv__item-card {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  position: relative;
+}
+
+.submit-cv__item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: var(--space-3);
+}
+
+.submit-cv__item-title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.submit-cv__item-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.submit-cv__item-remove {
+  flex-shrink: 0;
+}
+
+.submit-cv__item-body {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+.submit-cv__add-button {
+  width: 100%;
+}
+
+/* ============================================
+   Review Step
+   ============================================ */
+
+.submit-cv__review-section {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.submit-cv__review-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.submit-cv__review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.submit-cv__review-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.submit-cv__review-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.submit-cv__review-item {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: var(--space-4);
+}
+
+.submit-cv__review-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.submit-cv__review-value {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  line-height: var(--leading-relaxed);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  .submit-cv__container {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .submit-cv__title {
+    font-size: var(--text-3xl);
+  }
+
+  .submit-cv__subtitle {
+    font-size: var(--text-base);
+  }
+
+  .submit-cv__steps {
+    padding: 0 var(--space-2);
+  }
+
+  .submit-cv__step-circle {
+    width: 36px;
+    height: 36px;
+    font-size: 0.75rem;
+  }
+
+  .submit-cv__step-label {
+    font-size: 0.65rem;
+  }
+
+  .submit-cv__form-card {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .submit-cv__form-title {
+    font-size: var(--text-xl);
+  }
+
+  .submit-cv__form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .submit-cv__actions {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .submit-cv__actions-left,
+  .submit-cv__actions-right {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .submit-cv__actions-left button,
+  .submit-cv__actions-right button {
+    width: 100%;
+  }
+
+  .submit-cv__review-item {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}

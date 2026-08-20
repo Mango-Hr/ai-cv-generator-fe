@@ -1,5 +1,5 @@
 import { ArrowRight, FileText, Sparkles,  CheckCircle2, BookOpen } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import HeroIllustration from './HeroIllustration'
 import './Hero.css'
@@ -14,6 +14,13 @@ const fadeUp = {
 }
 
 export default function Hero() {
+  const navigate = useNavigate()
+
+  const handleNavigate = () => {
+    console.log('Build Resume clicked!')
+    navigate('/submit')
+  }
+  
   return (
     <section className="hero" id="hero">
       <div className="hero__inner container">
@@ -49,10 +56,10 @@ export default function Hero() {
 
           {/* CTAs */}
           <motion.div className="hero__ctas" variants={fadeUp} custom={2}>
-            <Link to="/submit" className="hero__cta-primary" id="hero-build-cv">
+            <button onClick={handleNavigate} className="hero__cta-primary" id="hero-build-cv">
               Build your Resume
               <ArrowRight size={18} />
-            </Link>
+            </button>
             <a href="#how-it-works" className="hero__cta-secondary" id="hero-see-how">
               See how it works
             </a>

@@ -43,6 +43,10 @@
   color: var(--color-text-primary);
   letter-spacing: var(--tracking-tight);
   transition: opacity var(--transition-fast);
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .header__logo:hover {
@@ -99,6 +103,9 @@
   color: var(--color-text-secondary);
   border-radius: var(--radius-md);
   transition: color var(--transition-fast), background var(--transition-fast);
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
 
 .header__chat-btn:hover {
@@ -117,6 +124,8 @@
   border-radius: var(--radius-full);
   transition: background var(--transition-fast), transform var(--transition-fast),
     box-shadow var(--transition-fast);
+  border: none;
+  cursor: pointer;
 }
 
 .header__cta-btn:hover {
@@ -206,6 +215,8 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   transition: color var(--transition-fast), border-color var(--transition-fast);
+  background: transparent;
+  cursor: pointer;
 }
 
 .header__mobile-chat:hover {
@@ -223,6 +234,8 @@
   background: var(--color-text-primary);
   border-radius: var(--radius-lg);
   transition: background var(--transition-fast);
+  border: none;
+  cursor: pointer;
 }
 
 .header__mobile-cta:hover {

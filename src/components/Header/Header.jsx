@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { MessageCircle, Menu, X } from 'lucide-react'
 import logoImg from '../../assets/textbg.png'
 import './Header.css'
 
 export default function Header() {
+  const navigate = useNavigate()
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -39,9 +40,9 @@ export default function Header() {
     <header className={`header ${scrolled ? 'header--scrolled' : ''}`} id="header">
       <div className="header__inner container">
         {/* Logo */}
-        <Link to="/" className="header__logo" aria-label="AI CV Generator Home">
+        <button onClick={() => navigate('/')} className="header__logo" aria-label="AI CV Generator Home">
           <img src={logoImg} alt="Logo" className="header__logo-img" />
-        </Link>
+        </button>
 
         {/* Desktop Nav */}
         <nav className="header__nav" aria-label="Main navigation">
@@ -59,13 +60,13 @@ export default function Header() {
 
         {/* Desktop Actions */}
         <div className="header__actions">
-          <a href="#chat" className="header__chat-btn" onClick={(e) => handleNavClick(e, '#chat')}>
+          <button onClick={() => navigate('/chat/1')} className="header__chat-btn">
             <MessageCircle size={16} />
             <span>Chat</span>
-          </a>
-          <Link to="/submit" className="header__cta-btn">
+          </button>
+          <button onClick={() => navigate('/submit')} className="header__cta-btn">
             Build your Resume
-          </Link>
+          </button>
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -96,13 +97,13 @@ export default function Header() {
             </a>
           ))}
           <div className="header__mobile-actions">
-            <a href="#chat" className="header__mobile-chat" onClick={(e) => { handleNavClick(e, '#chat'); setMobileMenuOpen(false); }}>
+            <button onClick={() => navigate('/chat/1')} className="header__mobile-chat">
               <MessageCircle size={18} />
               Chat
-            </a>
-            <Link to="/submit" className="header__mobile-cta" onClick={() => setMobileMenuOpen(false)}>
+            </button>
+            <button onClick={() => { navigate('/submit'); setMobileMenuOpen(false); }} className="header__mobile-cta">
               Build your CV
-            </Link>
+            </button>
           </div>
         </nav>
       </div>
