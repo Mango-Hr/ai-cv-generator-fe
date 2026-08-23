@@ -51,12 +51,12 @@ export default function SubmissionSuccess() {
 
             {/* Title */}
             <h1 className="submission-success__title">
-              CV Submitted Successfully!
+              Resume Built Successfully!
             </h1>
 
             <p className="submission-success__description">
-              Your CV submission has been received. Our team will review it and start crafting
-              your professional CV tailored to your target role.
+              Your resume submission has been received. Our team will review it and start crafting
+              your professional resume tailored to your target role.
             </p>
 
             {/* Submission ID Card */}
@@ -122,7 +122,7 @@ export default function SubmissionSuccess() {
                   <div className="submission-success__step-content">
                     <h3 className="submission-success__step-title">Delivery</h3>
                     <p className="submission-success__step-description">
-                      You'll receive your completed CV as PDF, Word, and LaTeX
+                      You'll receive your completed resume as PDF, Word, and LaTeX
                     </p>
                   </div>
                 </div>
@@ -136,7 +136,7 @@ export default function SubmissionSuccess() {
                 <div>
                   <h3 className="submission-success__cta-title">Have Questions?</h3>
                   <p className="submission-success__cta-description">
-                    Use our built-in chat to communicate with the team processing your CV
+                    Use our built-in chat to communicate with the team building your resume
                   </p>
                 </div>
               </div>

@@ -27,7 +27,7 @@ export default function ClientChat() {
         setError('Build your resume instead')
       }
     } else {
-      setError('Submission not found. Please build your resume instead.')
+      setError('Submission not found. Please build your resume first.')
     }
   }, [submissionId])
 
@@ -78,7 +78,7 @@ export default function ClientChat() {
             >
               Back
             </Button>
-            <h1 className="client-chat__title">Chat with Support</h1>
+            <h1 className="client-chat__title">Chat About Your Resume</h1>
             <div style={{ width: '100px' }} /> {/* Spacer for alignment */}
           </div>
 

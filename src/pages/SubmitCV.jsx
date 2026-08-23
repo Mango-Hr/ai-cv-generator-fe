@@ -324,7 +324,7 @@ export default function SubmitCV() {
       navigate(`/submit/success?id=${submissionId}`)
     } catch (error) {
       console.error('Submission error:', error)
-      setErrors({ submit: error.message || 'Failed to submit CV. Please try again.' })
+      setErrors({ submit: error.message || 'Failed to build resume. Please try again.' })
       setIsSubmitting(false)
     }
   }
@@ -338,9 +338,9 @@ export default function SubmitCV() {
         <div className="submit-cv__container">
           {/* Header */}
           <div className="submit-cv__header">
-            <h1 className="submit-cv__title">Submit Your CV</h1>
+            <h1 className="submit-cv__title">Build Your Resume</h1>
             <p className="submit-cv__subtitle">
-              Fill in your information and let our AI craft a professional CV tailored to your target role
+              Fill in your information and let our AI craft a professional Resume tailored to your target role
             </p>
           </div>
 
@@ -464,7 +464,7 @@ export default function SubmitCV() {
                       disabled={isSubmitting}
                       loading={isSubmitting}
                     >
-                      {isSubmitting ? 'Submitting...' : 'Submit CV'}
+                      {isSubmitting ? 'Building...' : 'Build Resume'}
                     </Button>
                   )}
                 </div>
@@ -561,7 +561,7 @@ function StepJobTarget({ formData, updateField, errors }) {
           onChange={(e) => updateField('jobDescription', e.target.value)}
           error={errors.jobDescription}
           rows={8}
-          helpText="Paste the full job description to help our AI tailor your CV"
+          helpText="Paste the full job description to help our AI tailor your resume"
         />
 
         <Select
