@@ -273,25 +273,41 @@ class ChatService {
    */
   async fetchMessages(submissionId, accessToken) {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/public/submissions/${submissionId}/messages`,
-        {
-          method: 'GET',
-          headers: {
-            'X-Client-Access-Token': accessToken,
-            'Content-Type': 'application/json'
-          }
+      const url = `${API_BASE_URL}/api/v1/public/submissions/${submissionId}/messages`
+      console.log('Fetching messages from:', url)
+      console.log('Submission ID:', submissionId)
+      console.log('Access Token:', accessToken ? `${accessToken.substring(0, 8)}...` : 'MISSING')
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'X-Client-Access-Token': accessToken,
+          'Content-Type': 'application/json'
         }
-      )
+      })
+
+      console.log('Fetch Messages Response Status:', response.status)
+      console.log('Fetch Messages Response Headers:', Object.fromEntries(response.headers.entries()))
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch messages: ${response.status}`)
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        try {
+          const errorData = await response.json()
+          console.error('Backend error response:', errorData)
+          errorMessage = errorData.message || errorData.detail || errorMessage
+        } catch (e) {
+          const errorText = await response.text()
+          console.error('Backend error text:', errorText)
+        }
+        throw new Error(`Failed to fetch messages: ${errorMessage}`)
       }
 
       const result = await response.json()
+      console.log('Messages fetched successfully:', result.data?.messages?.length || 0, 'messages')
       return result.data?.messages || []
     } catch (error) {
-      console.error('Error fetching messages:', error)
+      console.error('Error fetching messages:', error.message)
+      console.error('Full error:', error)
       throw error
     }
   }

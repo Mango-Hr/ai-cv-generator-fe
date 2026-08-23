@@ -60,32 +60,51 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
       try {
         setIsLoading(true)
         setError(null)
+        console.log('Initializing chat with submission:', submissionId, 'token:', accessToken ? `${accessToken.substring(0, 8)}...` : 'MISSING')
 
-        // Connect WebSocket
-        await chatService.connect(submissionId, accessToken)
+        // Fetch message history (don't wait for WebSocket)
+        try {
+          console.log('Fetching message history...')
+          const history = await chatService.fetchMessages(submissionId, accessToken)
+          console.log('Message history fetched:', history.length, 'messages')
+          setMessages(history)
 
-        // Fetch message history
-        const history = await chatService.fetchMessages(submissionId, accessToken)
-        setMessages(history)
+          // Mark as read
+          await chatService.markMessagesAsRead(submissionId, accessToken)
+        } catch (fetchErr) {
+          console.error('Failed to fetch messages:', fetchErr)
+          setError(`Failed to load messages: ${fetchErr.message}`)
+          setIsLoading(false)
+          return
+        }
 
-        // Mark as read
-        await chatService.markMessagesAsRead(submissionId, accessToken)
+        // Connect WebSocket (in parallel, non-blocking)
+        try {
+          console.log('Connecting to WebSocket...')
+          await chatService.connect(submissionId, accessToken)
+          console.log('WebSocket connected')
 
-        // Subscribe to messages
-        unsubscribeMessageRef.current = chatService.onMessage(handleWebSocketMessage)
+          // Subscribe to messages
+          unsubscribeMessageRef.current = chatService.onMessage(handleWebSocketMessage)
 
-        // Subscribe to connection changes
-        unsubscribeConnectionRef.current = chatService.onConnectionChange(handleConnectionChange)
+          // Subscribe to connection changes
+          unsubscribeConnectionRef.current = chatService.onConnectionChange(handleConnectionChange)
+        } catch (wsErr) {
+          console.warn('WebSocket connection failed (chat will still work with REST API):', wsErr)
+          // Don't fail - REST API is enough
+        }
 
         setIsLoading(false)
       } catch (err) {
         console.error('Failed to initialize chat:', err)
-        setError('Failed to connect to chat. Please try again.')
+        setError(`Failed to initialize chat: ${err.message}`)
         setIsLoading(false)
       }
     }
 
-    initChat()
+    if (accessToken && submissionId) {
+      initChat()
+    }
 
     // Cleanup on unmount
     return () => {
