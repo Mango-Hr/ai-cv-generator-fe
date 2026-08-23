@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, ArrowLeft, ArrowRight, Plus, X, Upload } from 'lucide-react'
+import { Check, ArrowLeft, ArrowRight, Plus, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Header from '../components/Header/Header'
 import Button from '../components/shared/Button'
 import { Input, Textarea, Select } from '../components/shared/Input'
-import FileUpload from '../components/shared/FileUpload'
 import { useToast } from '../contexts/ToastContext'
+import { createSubmission } from '../services/submissionService'
 import './SubmitCV.css'
 
 const STEPS = [
@@ -18,21 +18,32 @@ const STEPS = [
   { id: 6, label: 'Review' },
 ]
 
+const PRIORITY_OPTIONS = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'high', label: 'High' },
+  { value: 'urgent', label: 'Urgent' },
+]
+
 export default function SubmitCV() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errors, setErrors] = useState({})
+  
   const [formData, setFormData] = useState({
     // Personal Info
-    fullName: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    phone: '',
-    location: '',
+    phone: '', // optional
     
     // Job Target
     targetPosition: '',
+    targetCompany: '', // optional
     jobDescription: '',
-    existingCV: null,
+    priority: 'normal',
+    existingCVUrl: '', // optional
     
     // Experience
     experiences: [],
@@ -40,33 +51,63 @@ export default function SubmitCV() {
     // Education
     education: [],
     
-    // Skills
-    skills: '',
-    certifications: '',
-    additionalInfo: '',
+    // Skills & Certifications
+    skills: [],
+    certifications: [],
+    customNotes: '', // optional
   })
 
   const [currentExperience, setCurrentExperience] = useState({
     company: '',
     role: '',
-    duration: '',
+    startDate: '',
+    endDate: '', // optional
     description: '',
   })
 
   const [currentEducation, setCurrentEducation] = useState({
     institution: '',
     degree: '',
-    field: '',
-    year: '',
+    fieldOfStudy: '', // optional
+    startDate: '',
+    endDate: '', // optional
+    description: '', // optional
+  })
+
+  const [currentCertification, setCurrentCertification] = useState({
+    name: '',
+    issuingOrganization: '', // optional
+    issueDate: '', // optional
+    expirationDate: '', // optional
   })
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }))
+    }
   }
 
   const addExperience = () => {
-    if (!currentExperience.company || !currentExperience.role) {
-      toast.error('Please fill in required experience fields')
+    const expErrors = {}
+    
+    if (!currentExperience.company.trim()) {
+      expErrors.company = 'Company name is required'
+    }
+    if (!currentExperience.role.trim()) {
+      expErrors.role = 'Job title is required'
+    }
+    if (!currentExperience.startDate) {
+      expErrors.startDate = 'Start date is required'
+    }
+    // endDate is optional
+    if (!currentExperience.description.trim()) {
+      expErrors.description = 'Description is required'
+    }
+
+    if (Object.keys(expErrors).length > 0) {
+      setErrors(prev => ({ ...prev, experience: expErrors }))
       return
     }
     
@@ -75,7 +116,8 @@ export default function SubmitCV() {
       experiences: [...prev.experiences, { ...currentExperience, id: Date.now() }]
     }))
     
-    setCurrentExperience({ company: '', role: '', duration: '', description: '' })
+    setCurrentExperience({ company: '', role: '', startDate: '', endDate: '', description: '' })
+    setErrors(prev => ({ ...prev, experience: {} }))
     toast.success('Experience added')
   }
 
@@ -87,8 +129,23 @@ export default function SubmitCV() {
   }
 
   const addEducation = () => {
-    if (!currentEducation.institution || !currentEducation.degree) {
-      toast.error('Please fill in required education fields')
+    const eduErrors = {}
+    
+    if (!currentEducation.institution.trim()) {
+      eduErrors.institution = 'Institution is required'
+    }
+    if (!currentEducation.degree.trim()) {
+      eduErrors.degree = 'Degree is required'
+    }
+    // fieldOfStudy is optional
+    if (!currentEducation.startDate) {
+      eduErrors.startDate = 'Start date is required'
+    }
+    // endDate is optional
+    // description is optional
+
+    if (Object.keys(eduErrors).length > 0) {
+      setErrors(prev => ({ ...prev, education: eduErrors }))
       return
     }
     
@@ -97,7 +154,8 @@ export default function SubmitCV() {
       education: [...prev.education, { ...currentEducation, id: Date.now() }]
     }))
     
-    setCurrentEducation({ institution: '', degree: '', field: '', year: '' })
+    setCurrentEducation({ institution: '', degree: '', fieldOfStudy: '', startDate: '', endDate: '', description: '' })
+    setErrors(prev => ({ ...prev, education: {} }))
     toast.success('Education added')
   }
 
@@ -108,31 +166,84 @@ export default function SubmitCV() {
     }))
   }
 
+  const addCertification = () => {
+    const certErrors = {}
+    
+    if (!currentCertification.name.trim()) {
+      certErrors.name = 'Certification name is required'
+    }
+    // All other cert fields are optional
+
+    if (Object.keys(certErrors).length > 0) {
+      setErrors(prev => ({ ...prev, certification: certErrors }))
+      return
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      certifications: [...prev.certifications, { ...currentCertification, id: Date.now() }]
+    }))
+    
+    setCurrentCertification({ name: '', issuingOrganization: '', issueDate: '', expirationDate: '' })
+    setErrors(prev => ({ ...prev, certification: {} }))
+    toast.success('Certification added')
+  }
+
+  const removeCertification = (id) => {
+    setFormData(prev => ({
+      ...prev,
+      certifications: prev.certifications.filter(cert => cert.id !== id)
+    }))
+  }
+
   const validateStep = () => {
+    const stepErrors = {}
+
     switch (currentStep) {
       case 1:
-        if (!formData.fullName || !formData.email) {
-          toast.error('Please fill in all required fields')
-          return false
+        if (!formData.firstName.trim()) {
+          stepErrors.firstName = 'First name is required'
         }
+        if (!formData.lastName.trim()) {
+          stepErrors.lastName = 'Last name is required'
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!formData.email.trim()) {
+          stepErrors.email = 'Email is required'
+        } else if (!emailRegex.test(formData.email)) {
+          stepErrors.email = 'Please enter a valid email address'
+        }
+        // phone is optional
         break
       case 2:
-        if (!formData.targetPosition) {
-          toast.error('Please enter your target position')
-          return false
+        if (!formData.targetPosition.trim()) {
+          stepErrors.targetPosition = 'Target position is required'
         }
+        // targetCompany is optional
+        if (!formData.jobDescription.trim()) {
+          stepErrors.jobDescription = 'Job description is required'
+        }
+        // existingCVUrl and priority are optional
         break
       case 3:
         if (formData.experiences.length === 0) {
-          toast.warning('Consider adding at least one work experience')
+          stepErrors.experiences = 'Please add at least one work experience'
         }
         break
       case 4:
         if (formData.education.length === 0) {
-          toast.warning('Consider adding at least one education entry')
+          stepErrors.education = 'Please add at least one education entry'
         }
         break
     }
+
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors)
+      console.log('Validation failed for step', currentStep, ':', stepErrors)
+      return false
+    }
+
+    setErrors({})
     return true
   }
 
@@ -148,21 +259,64 @@ export default function SubmitCV() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
+      setErrors({})
     }
   }
 
   const handleSubmit = async () => {
-    // Mock API call
-    toast.info('Submitting your CV...')
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Mock submission ID
-    const submissionId = 'CV-' + Math.floor(Math.random() * 10000)
-    
-    toast.success('CV submitted successfully!')
-    navigate(`/submit/success?id=${submissionId}`)
+    if (isSubmitting) return
+
+    try {
+      setIsSubmitting(true)
+
+      // Transform formData to API format
+      const submissionData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        target_position: formData.targetPosition,
+        target_company: formData.targetCompany,
+        priority: formData.priority,
+        job_description: formData.jobDescription,
+        existing_cv_url: formData.existingCVUrl,
+        raw_data: {
+          education: formData.education.map(edu => ({
+            institution: edu.institution,
+            degree: edu.degree,
+            field_of_study: edu.fieldOfStudy,
+            start_date: edu.startDate,
+            end_date: edu.endDate,
+            description: edu.description,
+          })),
+          experience: formData.experiences.map(exp => ({
+            company: exp.company,
+            role: exp.role,
+            start_date: exp.startDate,
+            end_date: exp.endDate,
+            description: exp.description,
+          })),
+          skills: formData.skills,
+          certifications: formData.certifications.map(cert => ({
+            name: cert.name,
+            issuing_organization: cert.issuingOrganization,
+            issue_date: cert.issueDate,
+            expiration_date: cert.expirationDate,
+          })),
+          custom_notes: formData.customNotes,
+        },
+      }
+
+      // Call API
+      const response = await createSubmission(submissionData)
+      
+      toast.success('CV submitted successfully!')
+      navigate(`/submit/success?id=${response.id || response.submission_id}`)
+    } catch (error) {
+      console.error('Submission error:', error)
+      setErrors({ submit: error.message || 'Failed to submit CV. Please try again.' })
+      setIsSubmitting(false)
+    }
   }
 
   const progressPercentage = ((currentStep - 1) / (STEPS.length - 1)) * 100
@@ -204,6 +358,13 @@ export default function SubmitCV() {
             </div>
           </div>
 
+          {/* Error Alert */}
+          {errors.submit && (
+            <div className="submit-cv__error-alert" role="alert">
+              {errors.submit}
+            </div>
+          )}
+
           {/* Form Steps */}
           <AnimatePresence mode="wait">
             <motion.div
@@ -214,11 +375,11 @@ export default function SubmitCV() {
               transition={{ duration: 0.3 }}
             >
               {currentStep === 1 && (
-                <StepPersonalInfo formData={formData} updateField={updateField} />
+                <StepPersonalInfo formData={formData} updateField={updateField} errors={errors} />
               )}
               
               {currentStep === 2 && (
-                <StepJobTarget formData={formData} updateField={updateField} />
+                <StepJobTarget formData={formData} updateField={updateField} errors={errors} />
               )}
               
               {currentStep === 3 && (
@@ -228,6 +389,7 @@ export default function SubmitCV() {
                   setCurrentExperience={setCurrentExperience}
                   addExperience={addExperience}
                   removeExperience={removeExperience}
+                  errors={errors}
                 />
               )}
               
@@ -238,11 +400,21 @@ export default function SubmitCV() {
                   setCurrentEducation={setCurrentEducation}
                   addEducation={addEducation}
                   removeEducation={removeEducation}
+                  errors={errors}
                 />
               )}
               
               {currentStep === 5 && (
-                <StepSkills formData={formData} updateField={updateField} />
+                <StepSkills 
+                  formData={formData} 
+                  updateField={updateField}
+                  certifications={formData.certifications}
+                  currentCertification={currentCertification}
+                  setCurrentCertification={setCurrentCertification}
+                  addCertification={addCertification}
+                  removeCertification={removeCertification}
+                  errors={errors}
+                />
               )}
               
               {currentStep === 6 && (
@@ -257,6 +429,7 @@ export default function SubmitCV() {
                       variant="ghost" 
                       icon={<ArrowLeft />} 
                       onClick={prevStep}
+                      disabled={isSubmitting}
                     >
                       Previous
                     </Button>
@@ -270,6 +443,7 @@ export default function SubmitCV() {
                       icon={<ArrowRight />} 
                       iconPosition="right"
                       onClick={nextStep}
+                      disabled={isSubmitting}
                     >
                       Next Step
                     </Button>
@@ -277,8 +451,10 @@ export default function SubmitCV() {
                     <Button 
                       variant="primary" 
                       onClick={handleSubmit}
+                      disabled={isSubmitting}
+                      loading={isSubmitting}
                     >
-                      Submit CV
+                      {isSubmitting ? 'Submitting...' : 'Submit CV'}
                     </Button>
                   )}
                 </div>
@@ -292,7 +468,7 @@ export default function SubmitCV() {
 }
 
 // Step Components
-function StepPersonalInfo({ formData, updateField }) {
+function StepPersonalInfo({ formData, updateField, errors }) {
   return (
     <div className="submit-cv__form-card">
       <h2 className="submit-cv__form-title">Personal Information</h2>
@@ -301,46 +477,48 @@ function StepPersonalInfo({ formData, updateField }) {
       </p>
 
       <div className="submit-cv__form-fields">
-        <Input
-          label="Full Name"
-          placeholder="John Doe"
-          value={formData.fullName}
-          onChange={(e) => updateField('fullName', e.target.value)}
-          required
-        />
-
         <div className="submit-cv__form-row">
           <Input
-            label="Email Address"
-            type="email"
-            placeholder="john@example.com"
-            value={formData.email}
-            onChange={(e) => updateField('email', e.target.value)}
-            required
+            label="First Name"
+            placeholder="John"
+            value={formData.firstName}
+            onChange={(e) => updateField('firstName', e.target.value)}
+            error={errors.firstName}
           />
 
           <Input
-            label="Phone Number"
-            type="tel"
-            placeholder="+1 234 567 8900"
-            value={formData.phone}
-            onChange={(e) => updateField('phone', e.target.value)}
+            label="Last Name"
+            placeholder="Doe"
+            value={formData.lastName}
+            onChange={(e) => updateField('lastName', e.target.value)}
+            error={errors.lastName}
           />
         </div>
 
         <Input
-          label="Location"
-          placeholder="New York, NY"
-          value={formData.location}
-          onChange={(e) => updateField('location', e.target.value)}
-          helpText="City and state/country"
+          label="Email Address"
+          type="email"
+          placeholder="john@example.com"
+          value={formData.email}
+          onChange={(e) => updateField('email', e.target.value)}
+          error={errors.email}
+        />
+
+        <Input
+          label="Phone Number"
+          type="tel"
+          placeholder="+1 234 567 8900"
+          value={formData.phone}
+          onChange={(e) => updateField('phone', e.target.value)}
+          error={errors.phone}
+          helpText="optional"
         />
       </div>
     </div>
   )
 }
 
-function StepJobTarget({ formData, updateField }) {
+function StepJobTarget({ formData, updateField, errors }) {
   return (
     <div className="submit-cv__form-card">
       <h2 className="submit-cv__form-title">Target Position</h2>
@@ -354,8 +532,16 @@ function StepJobTarget({ formData, updateField }) {
           placeholder="Senior Product Manager"
           value={formData.targetPosition}
           onChange={(e) => updateField('targetPosition', e.target.value)}
-          required
-          helpText="The role you're targeting"
+          error={errors.targetPosition}
+        />
+
+        <Input
+          label="Target Company"
+          placeholder="Tech Corp"
+          value={formData.targetCompany}
+          onChange={(e) => updateField('targetCompany', e.target.value)}
+          error={errors.targetCompany}
+          helpText="optional"
         />
 
         <Textarea
@@ -363,27 +549,33 @@ function StepJobTarget({ formData, updateField }) {
           placeholder="Paste the job description here..."
           value={formData.jobDescription}
           onChange={(e) => updateField('jobDescription', e.target.value)}
+          error={errors.jobDescription}
           rows={8}
           helpText="Paste the full job description to help our AI tailor your CV"
         />
 
-        <div>
-          <label className="input-label" style={{ marginBottom: 'var(--space-2)' }}>
-            Existing CV (Optional)
-          </label>
-          <FileUpload
-            accept=".pdf,.docx,.doc"
-            maxSize={5}
-            onUpload={(files) => updateField('existingCV', files[0])}
-            helpText="Upload your current CV if you have one (PDF or Word)"
-          />
-        </div>
+        <Select
+          label="Priority"
+          value={formData.priority}
+          onChange={(e) => updateField('priority', e.target.value)}
+          options={PRIORITY_OPTIONS}
+          error={errors.priority}
+        />
+
+        <Input
+          label="Existing CV URL"
+          placeholder="https://example.com/my-cv.pdf"
+          value={formData.existingCVUrl}
+          onChange={(e) => updateField('existingCVUrl', e.target.value)}
+          error={errors.existingCVUrl}
+          helpText="optional"
+        />
       </div>
     </div>
   )
 }
 
-function StepExperience({ experiences, currentExperience, setCurrentExperience, addExperience, removeExperience }) {
+function StepExperience({ experiences, currentExperience, setCurrentExperience, addExperience, removeExperience, errors }) {
   return (
     <div className="submit-cv__form-card">
       <h2 className="submit-cv__form-title">Work Experience</h2>
@@ -392,6 +584,13 @@ function StepExperience({ experiences, currentExperience, setCurrentExperience, 
       </p>
 
       <div className="submit-cv__form-fields">
+        {/* Show error message if validation fails */}
+        {errors.experiences && (
+          <div className="submit-cv__error-message" role="alert">
+            {errors.experiences}
+          </div>
+        )}
+
         {/* Existing experiences */}
         {experiences.length > 0 && (
           <div className="submit-cv__items-list">
@@ -401,7 +600,7 @@ function StepExperience({ experiences, currentExperience, setCurrentExperience, 
                   <div>
                     <div className="submit-cv__item-title">{exp.role}</div>
                     <div className="submit-cv__item-subtitle">
-                      {exp.company} • {exp.duration}
+                      {exp.company} • {exp.startDate} to {exp.endDate || 'Present'}
                     </div>
                   </div>
                   <Button
@@ -409,7 +608,6 @@ function StepExperience({ experiences, currentExperience, setCurrentExperience, 
                     size="sm"
                     icon={<X />}
                     onClick={() => removeExperience(exp.id)}
-                    className="submit-cv__item-remove"
                   />
                 </div>
                 {exp.description && (
@@ -421,51 +619,78 @@ function StepExperience({ experiences, currentExperience, setCurrentExperience, 
         )}
 
         {/* Add new experience form */}
-        <Input
-          label="Company Name"
-          placeholder="Tech Corp"
-          value={currentExperience.company}
-          onChange={(e) => setCurrentExperience({ ...currentExperience, company: e.target.value })}
-        />
+        <div style={{ 
+          paddingTop: experiences.length > 0 ? 'var(--space-6)' : 0,
+          borderTop: experiences.length > 0 ? '1px solid var(--color-border)' : 'none'
+        }}>
+          <h3 style={{ 
+            marginBottom: 'var(--space-4)', 
+            fontSize: 'var(--text-sm)', 
+            fontWeight: 600,
+            color: 'var(--color-text-secondary)'
+          }}>
+            {experiences.length > 0 ? 'Add More Experience' : 'Add Your First Experience'}
+          </h3>
 
-        <div className="submit-cv__form-row">
+          <Input
+            label="Company Name"
+            placeholder="Tech Corp"
+            value={currentExperience.company}
+            onChange={(e) => setCurrentExperience({ ...currentExperience, company: e.target.value })}
+            error={errors.experience?.company}
+          />
+
           <Input
             label="Job Title"
             placeholder="Product Manager"
             value={currentExperience.role}
             onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })}
+            error={errors.experience?.role}
           />
 
-          <Input
-            label="Duration"
-            placeholder="2020-2023"
-            value={currentExperience.duration}
-            onChange={(e) => setCurrentExperience({ ...currentExperience, duration: e.target.value })}
+          <div className="submit-cv__form-row">
+            <Input
+              label="Start Date"
+              type="date"
+              value={currentExperience.startDate}
+              onChange={(e) => setCurrentExperience({ ...currentExperience, startDate: e.target.value })}
+              error={errors.experience?.startDate}
+            />
+
+            <Input
+              label="End Date"
+              type="date"
+              value={currentExperience.endDate}
+              onChange={(e) => setCurrentExperience({ ...currentExperience, endDate: e.target.value })}
+              error={errors.experience?.endDate}
+              helpText="optional"
+            />
+          </div>
+
+          <Textarea
+            label="Description"
+            placeholder="Describe your responsibilities and achievements..."
+            value={currentExperience.description}
+            onChange={(e) => setCurrentExperience({ ...currentExperience, description: e.target.value })}
+            error={errors.experience?.description}
+            rows={4}
           />
+
+          <Button
+            variant="secondary"
+            icon={<Plus />}
+            onClick={addExperience}
+            className="submit-cv__add-button"
+          >
+            {experiences.length > 0 ? 'Add Another Experience' : 'Add Experience'}
+          </Button>
         </div>
-
-        <Textarea
-          label="Description"
-          placeholder="Describe your responsibilities and achievements..."
-          value={currentExperience.description}
-          onChange={(e) => setCurrentExperience({ ...currentExperience, description: e.target.value })}
-          rows={4}
-        />
-
-        <Button
-          variant="secondary"
-          icon={<Plus />}
-          onClick={addExperience}
-          className="submit-cv__add-button"
-        >
-          Add Experience
-        </Button>
       </div>
     </div>
   )
 }
 
-function StepEducation({ education, currentEducation, setCurrentEducation, addEducation, removeEducation }) {
+function StepEducation({ education, currentEducation, setCurrentEducation, addEducation, removeEducation, errors }) {
   return (
     <div className="submit-cv__form-card">
       <h2 className="submit-cv__form-title">Education</h2>
@@ -474,6 +699,12 @@ function StepEducation({ education, currentEducation, setCurrentEducation, addEd
       </p>
 
       <div className="submit-cv__form-fields">
+        {errors.education && typeof errors.education === 'string' && (
+          <div className="submit-cv__error-message" role="alert">
+            {errors.education}
+          </div>
+        )}
+
         {/* Existing education */}
         {education.length > 0 && (
           <div className="submit-cv__items-list">
@@ -483,7 +714,7 @@ function StepEducation({ education, currentEducation, setCurrentEducation, addEd
                   <div>
                     <div className="submit-cv__item-title">{edu.degree}</div>
                     <div className="submit-cv__item-subtitle">
-                      {edu.institution} {edu.field && `• ${edu.field}`} {edu.year && `• ${edu.year}`}
+                      {edu.institution} {edu.fieldOfStudy && `• ${edu.fieldOfStudy}`}
                     </div>
                   </div>
                   <Button
@@ -491,7 +722,6 @@ function StepEducation({ education, currentEducation, setCurrentEducation, addEd
                     size="sm"
                     icon={<X />}
                     onClick={() => removeEducation(edu.id)}
-                    className="submit-cv__item-remove"
                   />
                 </div>
               </div>
@@ -500,53 +730,100 @@ function StepEducation({ education, currentEducation, setCurrentEducation, addEd
         )}
 
         {/* Add new education form */}
-        <Input
-          label="Institution"
-          placeholder="University of Technology"
-          value={currentEducation.institution}
-          onChange={(e) => setCurrentEducation({ ...currentEducation, institution: e.target.value })}
-        />
+        <div style={{ 
+          paddingTop: education.length > 0 ? 'var(--space-6)' : 0,
+          borderTop: education.length > 0 ? '1px solid var(--color-border)' : 'none'
+        }}>
+          <h3 style={{ 
+            marginBottom: 'var(--space-4)', 
+            fontSize: 'var(--text-sm)', 
+            fontWeight: 600,
+            color: 'var(--color-text-secondary)'
+          }}>
+            {education.length > 0 ? 'Add More Education' : 'Add Your First Education'}
+          </h3>
 
-        <div className="submit-cv__form-row">
+          <Input
+            label="Institution"
+            placeholder="University of Technology"
+            value={currentEducation.institution}
+            onChange={(e) => setCurrentEducation({ ...currentEducation, institution: e.target.value })}
+            error={errors.education?.institution}
+          />
+
           <Input
             label="Degree"
             placeholder="Bachelor of Science"
             value={currentEducation.degree}
             onChange={(e) => setCurrentEducation({ ...currentEducation, degree: e.target.value })}
+            error={errors.education?.degree}
           />
 
           <Input
             label="Field of Study"
             placeholder="Computer Science"
-            value={currentEducation.field}
-            onChange={(e) => setCurrentEducation({ ...currentEducation, field: e.target.value })}
+            value={currentEducation.fieldOfStudy}
+            onChange={(e) => setCurrentEducation({ ...currentEducation, fieldOfStudy: e.target.value })}
+            error={errors.education?.fieldOfStudy}
+            helpText="optional"
           />
+
+          <div className="submit-cv__form-row">
+            <Input
+              label="Start Date"
+              type="date"
+              value={currentEducation.startDate}
+              onChange={(e) => setCurrentEducation({ ...currentEducation, startDate: e.target.value })}
+              error={errors.education?.startDate}
+            />
+
+            <Input
+              label="End Date"
+              type="date"
+              value={currentEducation.endDate}
+              onChange={(e) => setCurrentEducation({ ...currentEducation, endDate: e.target.value })}
+              error={errors.education?.endDate}
+              helpText="optional"
+            />
+          </div>
+
+          <Textarea
+            label="Description"
+            placeholder="GPA, relevant coursework, thesis..."
+            value={currentEducation.description}
+            onChange={(e) => setCurrentEducation({ ...currentEducation, description: e.target.value })}
+            error={errors.education?.description}
+            rows={3}
+            helpText="optional"
+          />
+
+          <Button
+            variant="secondary"
+            icon={<Plus />}
+            onClick={addEducation}
+            className="submit-cv__add-button"
+          >
+            {education.length > 0 ? 'Add Another Education' : 'Add Education'}
+          </Button>
         </div>
-
-        <Input
-          label="Year"
-          placeholder="2020"
-          value={currentEducation.year}
-          onChange={(e) => setCurrentEducation({ ...currentEducation, year: e.target.value })}
-        />
-
-        <Button
-          variant="secondary"
-          icon={<Plus />}
-          onClick={addEducation}
-          className="submit-cv__add-button"
-        >
-          Add Education
-        </Button>
       </div>
     </div>
   )
 }
 
-function StepSkills({ formData, updateField }) {
+function StepSkills({ formData, updateField, certifications, currentCertification, setCurrentCertification, addCertification, removeCertification, errors }) {
+  const handleSkillsChange = (e) => {
+    const skillsText = e.target.value
+    const skillsArray = skillsText
+      .split(',')
+      .map(skill => skill.trim())
+      .filter(skill => skill.length > 0)
+    updateField('skills', skillsArray)
+  }
+
   return (
     <div className="submit-cv__form-card">
-      <h2 className="submit-cv__form-title">Skills & Additional Info</h2>
+      <h2 className="submit-cv__form-title">Skills & Certifications</h2>
       <p className="submit-cv__form-description">
         Add your skills, certifications, and any additional information
       </p>
@@ -555,28 +832,106 @@ function StepSkills({ formData, updateField }) {
         <Textarea
           label="Skills"
           placeholder="Product Strategy, Agile, Stakeholder Management..."
-          value={formData.skills}
-          onChange={(e) => updateField('skills', e.target.value)}
+          value={formData.skills.join(', ')}
+          onChange={handleSkillsChange}
+          error={errors.skills}
           rows={4}
           helpText="List your relevant skills, separated by commas"
         />
 
-        <Textarea
-          label="Certifications"
-          placeholder="PMP, Scrum Master, AWS Certified..."
-          value={formData.certifications}
-          onChange={(e) => updateField('certifications', e.target.value)}
-          rows={3}
-          helpText="Any professional certifications you hold"
-        />
+        {/* Certifications */}
+        {certifications.length > 0 && (
+          <div className="submit-cv__items-list">
+            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: 600 }}>
+              Added Certifications ({certifications.length})
+            </label>
+            {certifications.map(cert => (
+              <div key={cert.id} className="submit-cv__item-card">
+                <div className="submit-cv__item-header">
+                  <div>
+                    <div className="submit-cv__item-title">{cert.name}</div>
+                    {cert.issuingOrganization && (
+                      <div className="submit-cv__item-subtitle">{cert.issuingOrganization}</div>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={<X />}
+                    onClick={() => removeCertification(cert.id)}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {errors.certification && (
+          <div className="submit-cv__error-message" role="alert">
+            {errors.certification.name}
+          </div>
+        )}
+
+        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)', marginTop: 'var(--space-4)' }}>
+          <h3 style={{ marginBottom: 'var(--space-3)', fontSize: 'var(--text-sm)', fontWeight: 600 }}>
+            Add New Certification
+          </h3>
+
+          <Input
+            label="Certification Name"
+            placeholder="AWS Solutions Architect"
+            value={currentCertification.name}
+            onChange={(e) => setCurrentCertification({ ...currentCertification, name: e.target.value })}
+            error={errors.certification?.name}
+          />
+
+          <Input
+            label="Issuing Organization"
+            placeholder="Amazon Web Services"
+            value={currentCertification.issuingOrganization}
+            onChange={(e) => setCurrentCertification({ ...currentCertification, issuingOrganization: e.target.value })}
+            error={errors.certification?.issuingOrganization}
+            helpText="optional"
+          />
+
+          <div className="submit-cv__form-row">
+            <Input
+              label="Issue Date"
+              type="date"
+              value={currentCertification.issueDate}
+              onChange={(e) => setCurrentCertification({ ...currentCertification, issueDate: e.target.value })}
+              error={errors.certification?.issueDate}
+              helpText="optional"
+            />
+
+            <Input
+              label="Expiration Date"
+              type="date"
+              value={currentCertification.expirationDate}
+              onChange={(e) => setCurrentCertification({ ...currentCertification, expirationDate: e.target.value })}
+              error={errors.certification?.expirationDate}
+              helpText="optional"
+            />
+          </div>
+
+          <Button
+            variant="secondary"
+            icon={<Plus />}
+            onClick={addCertification}
+            className="submit-cv__add-button"
+          >
+            Add Certification
+          </Button>
+        </div>
 
         <Textarea
           label="Additional Information"
           placeholder="Languages, volunteer work, publications..."
-          value={formData.additionalInfo}
-          onChange={(e) => updateField('additionalInfo', e.target.value)}
+          value={formData.customNotes}
+          onChange={(e) => updateField('customNotes', e.target.value)}
+          error={errors.customNotes}
           rows={4}
-          helpText="Any other relevant information"
+          helpText="optional"
         />
       </div>
     </div>
@@ -602,8 +957,8 @@ function StepReview({ formData, setCurrentStep }) {
           </div>
           <div className="submit-cv__review-content">
             <div className="submit-cv__review-item">
-              <span className="submit-cv__review-label">Full Name:</span>
-              <span className="submit-cv__review-value">{formData.fullName}</span>
+              <span className="submit-cv__review-label">Name:</span>
+              <span className="submit-cv__review-value">{formData.firstName} {formData.lastName}</span>
             </div>
             <div className="submit-cv__review-item">
               <span className="submit-cv__review-label">Email:</span>
@@ -613,12 +968,6 @@ function StepReview({ formData, setCurrentStep }) {
               <div className="submit-cv__review-item">
                 <span className="submit-cv__review-label">Phone:</span>
                 <span className="submit-cv__review-value">{formData.phone}</span>
-              </div>
-            )}
-            {formData.location && (
-              <div className="submit-cv__review-item">
-                <span className="submit-cv__review-label">Location:</span>
-                <span className="submit-cv__review-value">{formData.location}</span>
               </div>
             )}
           </div>
@@ -637,14 +986,16 @@ function StepReview({ formData, setCurrentStep }) {
               <span className="submit-cv__review-label">Position:</span>
               <span className="submit-cv__review-value">{formData.targetPosition}</span>
             </div>
-            {formData.jobDescription && (
+            {formData.targetCompany && (
               <div className="submit-cv__review-item">
-                <span className="submit-cv__review-label">Job Description:</span>
-                <span className="submit-cv__review-value">
-                  {formData.jobDescription.substring(0, 150)}...
-                </span>
+                <span className="submit-cv__review-label">Company:</span>
+                <span className="submit-cv__review-value">{formData.targetCompany}</span>
               </div>
             )}
+            <div className="submit-cv__review-item">
+              <span className="submit-cv__review-label">Priority:</span>
+              <span className="submit-cv__review-value">{formData.priority}</span>
+            </div>
           </div>
         </div>
 
@@ -669,7 +1020,7 @@ function StepReview({ formData, setCurrentStep }) {
         </div>
 
         {/* Skills */}
-        {formData.skills && (
+        {formData.skills.length > 0 && (
           <div className="submit-cv__review-section">
             <div className="submit-cv__review-header">
               <h3 className="submit-cv__review-title">Skills</h3>
@@ -680,7 +1031,7 @@ function StepReview({ formData, setCurrentStep }) {
             <div className="submit-cv__review-content">
               <div className="submit-cv__review-item">
                 <span className="submit-cv__review-label">Skills:</span>
-                <span className="submit-cv__review-value">{formData.skills}</span>
+                <span className="submit-cv__review-value">{formData.skills.join(', ')}</span>
               </div>
             </div>
           </div>
