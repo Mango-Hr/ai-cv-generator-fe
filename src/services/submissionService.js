@@ -12,7 +12,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000
  */
 export const createSubmission = async (submissionData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/public/submissions`, {
+    const url = `${API_BASE_URL}/api/v1/public/submissions`
+    console.log('Making submission request to:', url)
+    console.log('API_BASE_URL:', API_BASE_URL)
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -20,16 +24,25 @@ export const createSubmission = async (submissionData) => {
       body: JSON.stringify(submissionData),
     })
 
+    console.log('Response status:', response.status)
+
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || 'Failed to create submission')
+      let error
+      try {
+        error = await response.json()
+        throw new Error(error.message || `HTTP ${response.status}: Failed to create submission`)
+      } catch (e) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
     }
 
     const data = await response.json()
+    console.log('Submission successful:', data)
     return data
   } catch (error) {
-    console.error('Submission API Error:', error)
-    throw error
+    console.error('Submission API Error:', error.message)
+    console.error('Full error:', error)
+    throw new Error(error.message || 'Failed to connect to backend. Please check your internet connection.')
   }
 }
 
