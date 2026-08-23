@@ -24,10 +24,10 @@ export default function ClientChat() {
         setClientName(`${first_name} ${last_name}`.trim() || 'You')
       } catch (err) {
         console.error('Error parsing stored submission data:', err)
-        setError('Failed to load submission data. Please try submitting your CV again.')
+        setError('Build your resume instead')
       }
     } else {
-      setError('Submission not found. Please submit your CV first.')
+      setError('Submission not found. Please build your resume instead.')
     }
   }, [submissionId])
 
@@ -54,7 +54,7 @@ export default function ClientChat() {
                 variant="primary"
                 onClick={() => navigate('/submit')}
               >
-                Submit CV
+                Build Your Resume
               </Button>
             </div>
           </div>
