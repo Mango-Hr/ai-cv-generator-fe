@@ -15,18 +15,36 @@ export default function ClientChat() {
 
   useEffect(() => {
     // Retrieve access token and client info from localStorage
-    const stored = localStorage.getItem(`submission_${submissionId}`)
+    console.log('ClientChat mounted with submissionId:', submissionId)
+    console.log('Checking localStorage for submission data...')
+    
+    if (!submissionId) {
+      console.error('No submissionId in URL!')
+      setError('Submission not found. Please build your resume first.')
+      return
+    }
+    
+    const key = `submission_${submissionId}`
+    console.log('Looking for localStorage key:', key)
+    const stored = localStorage.getItem(key)
+    
+    console.log('localStorage value:', stored ? `Found (${stored.length} chars)` : 'NOT FOUND')
+    console.log('Available localStorage keys:', Object.keys(localStorage).filter(k => k.includes('submission')))
     
     if (stored) {
       try {
-        const { access_token, first_name, last_name } = JSON.parse(stored)
+        const parsed = JSON.parse(stored)
+        console.log('Parsed data:', { access_token: parsed.access_token ? '✓' : '✗', first_name: parsed.first_name, last_name: parsed.last_name })
+        const { access_token, first_name, last_name } = parsed
         setAccessToken(access_token)
         setClientName(`${first_name} ${last_name}`.trim() || 'You')
+        console.log('✅ Access token set, client name:', `${first_name} ${last_name}`)
       } catch (err) {
-        console.error('Error parsing stored submission data:', err)
-        setError('Build your resume instead')
+        console.error('❌ Error parsing stored submission data:', err)
+        setError('Failed to parse session data')
       }
     } else {
+      console.error('❌ No data found in localStorage for key:', key)
       setError('Submission not found. Please build your resume first.')
     }
   }, [submissionId])

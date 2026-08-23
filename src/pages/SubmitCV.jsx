@@ -421,17 +421,35 @@ export default function SubmitCV() {
       // Call API
       const response = await createSubmission(submissionData)
       
+      console.log('Response structure:', response)
+      console.log('Full response keys:', Object.keys(response))
+      
       // Store submission data in localStorage for chat access
-      const submissionId = response.id || response.submission_id
+      // Backend returns: {status, status_code, message, data: {submission_id, access_token, ...}}
+      const submissionId = response.data?.submission_id || response.submission_id || response.id
+      const accessToken = response.data?.access_token || response.access_token
+      
+      console.log('Extracted submissionId:', submissionId)
+      console.log('Extracted accessToken:', accessToken ? `${accessToken.substring(0, 8)}...` : 'MISSING')
+      
+      if (!submissionId || !accessToken) {
+        console.error('❌ Missing required fields in response!')
+        console.error('Response:', response)
+        throw new Error('Invalid response from backend: missing submission_id or access_token')
+      }
+      
       const storedData = {
-        access_token: response.access_token,
+        access_token: accessToken,
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
       }
-      localStorage.setItem(`submission_${submissionId}`, JSON.stringify(storedData))
       
-      toast.success('CV submitted successfully!')
+      localStorage.setItem(`submission_${submissionId}`, JSON.stringify(storedData))
+      console.log('✅ Stored in localStorage:', `submission_${submissionId}`)
+      
+      toast.success('Resume submitted successfully!')
+      console.log('Navigating to:', `/submit/success?id=${submissionId}`)
       navigate(`/submit/success?id=${submissionId}`)
     } catch (error) {
       console.error('Submission error:', error)
