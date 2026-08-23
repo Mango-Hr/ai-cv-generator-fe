@@ -78,21 +78,26 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
           return
         }
 
-        // Connect WebSocket (in parallel, non-blocking)
-        try {
-          console.log('Connecting to WebSocket...')
-          await chatService.connect(submissionId, accessToken)
-          console.log('WebSocket connected')
+        // Connect WebSocket (fire-and-forget, truly non-blocking)
+        // Don't await - let it connect in the background
+        chatService.connect(submissionId, accessToken)
+          .then(() => {
+            console.log('✅ WebSocket connected')
+            
+            // Subscribe to messages
+            if (!unsubscribeMessageRef.current) {
+              unsubscribeMessageRef.current = chatService.onMessage(handleWebSocketMessage)
+            }
 
-          // Subscribe to messages
-          unsubscribeMessageRef.current = chatService.onMessage(handleWebSocketMessage)
-
-          // Subscribe to connection changes
-          unsubscribeConnectionRef.current = chatService.onConnectionChange(handleConnectionChange)
-        } catch (wsErr) {
-          console.warn('WebSocket connection failed (chat will still work with REST API):', wsErr)
-          // Don't fail - REST API is enough
-        }
+            // Subscribe to connection changes
+            if (!unsubscribeConnectionRef.current) {
+              unsubscribeConnectionRef.current = chatService.onConnectionChange(handleConnectionChange)
+            }
+          })
+          .catch((wsErr) => {
+            console.warn('⚠️ WebSocket connection failed (chat works via REST API):', wsErr.message)
+            // Non-critical - REST API is fully functional
+          })
 
         setIsLoading(false)
       } catch (err) {
