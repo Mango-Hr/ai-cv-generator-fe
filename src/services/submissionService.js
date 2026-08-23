@@ -15,24 +15,32 @@ export const createSubmission = async (submissionData) => {
     const url = `${API_BASE_URL}/api/v1/public/submissions`
     console.log('Making submission request to:', url)
     console.log('API_BASE_URL:', API_BASE_URL)
+    console.log('Submission payload:', JSON.stringify(submissionData, null, 2))
+    
+    const bodyString = JSON.stringify(submissionData)
+    console.log('Request body size:', bodyString.length, 'bytes')
     
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(submissionData),
+      body: bodyString,
     })
 
     console.log('Response status:', response.status)
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()))
 
     if (!response.ok) {
       let error
       try {
-        error = await response.json()
-        throw new Error(error.message || `HTTP ${response.status}: Failed to create submission`)
+        const errorData = await response.json()
+        console.error('Backend error response:', errorData)
+        throw new Error(errorData.message || errorData.detail || `HTTP ${response.status}: Failed to create submission`)
       } catch (e) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        const errorText = await response.text()
+        console.error('Backend error text:', errorText)
+        throw new Error(`HTTP ${response.status}: ${response.statusText}. Details: ${errorText}`)
       }
     }
 
