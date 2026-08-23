@@ -310,8 +310,18 @@ export default function SubmitCV() {
       // Call API
       const response = await createSubmission(submissionData)
       
+      // Store submission data in localStorage for chat access
+      const submissionId = response.id || response.submission_id
+      const storedData = {
+        access_token: response.access_token,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+      }
+      localStorage.setItem(`submission_${submissionId}`, JSON.stringify(storedData))
+      
       toast.success('CV submitted successfully!')
-      navigate(`/submit/success?id=${response.id || response.submission_id}`)
+      navigate(`/submit/success?id=${submissionId}`)
     } catch (error) {
       console.error('Submission error:', error)
       setErrors({ submit: error.message || 'Failed to submit CV. Please try again.' })
