@@ -24,6 +24,88 @@ const PRIORITY_OPTIONS = [
   { value: 'urgent', label: 'Urgent' },
 ]
 
+// Sample data for testing/demo purposes
+const SAMPLE_DATA = {
+  formData: {
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john.doe@example.com',
+    phone: '+1-555-123-4567',
+    targetPosition: 'Senior React Developer',
+    targetCompany: 'Google',
+    jobDescription: `We are looking for an experienced Senior React Developer to join our team. 
+Requirements:
+- 5+ years of React and JavaScript experience
+- Strong knowledge of TypeScript and modern web standards
+- Experience with state management (Redux, Context API)
+- Unit testing expertise (Jest, React Testing Library)
+- REST API and GraphQL integration
+- Performance optimization skills
+- Mentoring experience preferred
+
+Responsibilities:
+- Design and implement scalable React components
+- Lead code reviews and architectural decisions
+- Mentor junior developers
+- Collaborate with design and product teams`,
+    priority: 'high',
+    existingCVUrl: '',
+    experiences: [
+      {
+        company: 'Google',
+        role: 'Senior Software Engineer',
+        startDate: '2021-06-01',
+        endDate: '',
+        description: 'Led a team of 5 engineers building the React component library. Implemented 50+ reusable components used by 10+ internal projects. Improved performance by 40% through code splitting and lazy loading.',
+        id: 1,
+      },
+      {
+        company: 'Facebook',
+        role: 'Software Engineer',
+        startDate: '2019-07-01',
+        endDate: '2021-05-31',
+        description: 'Built features for Facebook Messenger using React. Implemented real-time messaging with WebSocket. Mentored 2 junior engineers on React best practices.',
+        id: 2,
+      },
+    ],
+    education: [
+      {
+        institution: 'Massachusetts Institute of Technology (MIT)',
+        degree: 'BS',
+        fieldOfStudy: 'Computer Science',
+        startDate: '2015-09-01',
+        endDate: '2019-05-31',
+        description: 'Relevant coursework: Data Structures, Algorithms, Web Development, Machine Learning, Database Systems',
+        id: 1,
+      },
+    ],
+    skills: [
+      'JavaScript',
+      'TypeScript',
+      'React',
+      'Redux',
+      'Node.js',
+      'PostgreSQL',
+      'MongoDB',
+      'AWS',
+      'Docker',
+      'Git',
+      'REST APIs',
+      'GraphQL',
+    ],
+    certifications: [
+      {
+        name: 'AWS Solutions Architect Professional',
+        issuingOrganization: 'Amazon',
+        issueDate: '2022-06-15',
+        expirationDate: '2025-06-15',
+        id: 1,
+      },
+    ],
+    customNotes: 'Available immediately. Prefer remote roles. Open to contracts or full-time positions.',
+  },
+}
+
 export default function SubmitCV() {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -87,6 +169,35 @@ export default function SubmitCV() {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }))
     }
+  }
+
+  const autoFillForm = () => {
+    setFormData(SAMPLE_DATA.formData)
+    setCurrentStep(6) // Jump to review step
+    toast.success('Form auto-filled! Review the data and submit.')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const clearForm = () => {
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      targetPosition: '',
+      targetCompany: '',
+      jobDescription: '',
+      priority: 'normal',
+      existingCVUrl: '',
+      experiences: [],
+      education: [],
+      skills: [],
+      certifications: [],
+      customNotes: '',
+    })
+    setCurrentStep(1)
+    setErrors({})
+    toast.success('Form cleared')
   }
 
   const addExperience = () => {
@@ -338,10 +449,49 @@ export default function SubmitCV() {
         <div className="submit-cv__container">
           {/* Header */}
           <div className="submit-cv__header">
-            <h1 className="submit-cv__title">Build Your Resume</h1>
-            <p className="submit-cv__subtitle">
-              Fill in your information and let our AI craft a professional Resume tailored to your target role
-            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <h1 className="submit-cv__title">Build Your Resume</h1>
+                <p className="submit-cv__subtitle">
+                  Fill in your information and let our AI craft a professional Resume tailored to your target role
+                </p>
+              </div>
+              {/* Auto-fill buttons for testing */}
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <button
+                  onClick={autoFillForm}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '12px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title="Auto-fill form with sample data for testing"
+                >
+                  📋 Auto-fill
+                </button>
+                <button
+                  onClick={clearForm}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '12px',
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title="Clear all form data"
+                >
+                  🗑️ Clear
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Progress Indicator */}
