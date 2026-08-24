@@ -60,9 +60,8 @@ export default function Header() {
 
         {/* Desktop Actions */}
         <div className="header__actions">
-          <button onClick={() => navigate('/chat/1')} className="header__chat-btn">
-            <MessageCircle size={16} />
-            <span>Chat</span>
+          <button onClick={() => navigate('/my-submissions')} className="header__submissions-btn" title="View all submissions">
+            My Submissions
           </button>
           <button onClick={() => navigate('/submit')} className="header__cta-btn">
             Build your Resume
@@ -97,12 +96,11 @@ export default function Header() {
             </a>
           ))}
           <div className="header__mobile-actions">
-            <button onClick={() => navigate('/chat/1')} className="header__mobile-chat">
-              <MessageCircle size={18} />
-              Chat
+            <button onClick={() => { navigate('/my-submissions'); setMobileMenuOpen(false); }} className="header__mobile-submissions">
+              My Submissions
             </button>
             <button onClick={() => { navigate('/submit'); setMobileMenuOpen(false); }} className="header__mobile-cta">
-              Build your CV
+              Build your Resume
             </button>
           </div>
         </nav>

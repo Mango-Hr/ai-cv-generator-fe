@@ -1,0 +1,418 @@
+.my-submissions {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+}
+
+.my-submissions__container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.my-submissions__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  gap: 20px;
+}
+
+.my-submissions__title {
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+/* Action Bar */
+.my-submissions__action-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  justify-content: center;
+}
+
+.my-submissions__action-bar button {
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.my-submissions__action-bar button:hover {
+  background: #f0f0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading State */
+.my-submissions__loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  color: white;
+  font-size: 18px;
+}
+
+/* Empty State */
+.my-submissions__empty {
+  background: white;
+  border-radius: 12px;
+  padding: 60px 40px;
+  text-align: center;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.my-submissions__empty h2 {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.my-submissions__empty p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.my-submissions__empty button {
+  margin-top: 20px;
+}
+
+/* Submissions List */
+.my-submissions__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Submission Card */
+.submission-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.submission-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  border-color: #667eea;
+}
+
+.submission-card__content {
+  flex: 1;
+}
+
+.submission-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.submission-card__name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  flex: 1;
+}
+
+.submission-card__date {
+  font-size: 12px;
+  color: #999;
+  white-space: nowrap;
+  padding: 4px 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.submission-card__email {
+  font-size: 14px;
+  color: #666;
+  margin: 8px 0;
+}
+
+.submission-card__phone {
+  font-size: 14px;
+  color: #999;
+  margin: 4px 0;
+}
+
+/* Card Actions */
+.submission-card__actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+.submission-card__button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.submission-card__button span {
+  display: inline;
+}
+
+.submission-card__button--chat {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.submission-card__button--chat:hover {
+  background: #bbdefb;
+  transform: scale(1.05);
+}
+
+.submission-card__button--edit {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.submission-card__button--edit:hover {
+  background: #e1bee7;
+  transform: scale(1.05);
+}
+
+.submission-card__button--delete {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.submission-card__button--delete:hover {
+  background: #ffcdd2;
+  transform: scale(1.05);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.modal__message {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modal__actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal__actions button:first-child {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modal__actions button:first-child:hover {
+  background: #e0e0e0;
+}
+
+.modal__actions button:last-child {
+  background: #c62828;
+  color: white;
+}
+
+.modal__actions button:last-child:hover {
+  background: #b71c1c;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .my-submissions {
+    padding: 20px 16px;
+  }
+
+  .my-submissions__header {
+    flex-direction: column;
+    margin-bottom: 24px;
+  }
+
+  .my-submissions__title {
+    font-size: 24px;
+  }
+
+  .my-submissions__list {
+    grid-template-columns: 1fr;
+  }
+
+  .submission-card {
+    padding: 16px;
+  }
+
+  .submission-card__header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .submission-card__button {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .submission-card__button span {
+    display: none;
+  }
+
+  .submission-card__actions {
+    gap: 6px;
+  }
+
+  .modal {
+    padding: 24px;
+    max-width: 90vw;
+  }
+
+  .my-submissions__action-bar {
+    width: 100%;
+  }
+
+  .my-submissions__action-bar button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .my-submissions {
+    padding: 16px 12px;
+  }
+
+  .my-submissions__title {
+    font-size: 20px;
+  }
+
+  .submission-card {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .submission-card__name {
+    font-size: 16px;
+  }
+
+  .submission-card__date {
+    font-size: 11px;
+  }
+
+  .submission-card__email {
+    font-size: 13px;
+  }
+
+  .modal {
+    padding: 20px;
+  }
+
+  .modal__title {
+    font-size: 18px;
+  }
+
+  .modal__message {
+    font-size: 13px;
+  }
+
+  .modal__actions {
+    gap: 8px;
+  }
+
+  .modal__actions button {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}

@@ -6,6 +6,7 @@ import SubmitCV from './pages/SubmitCV'
 import SubmissionSuccess from './pages/SubmissionSuccess'
 import ClientChat from './pages/ClientChat'
 import CVDownload from './pages/CVDownload'
+import MySubmissions from './pages/MySubmissions'
 import './index.css'
 
 function App() {
@@ -16,8 +17,13 @@ function App() {
           {/* Landing Page */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/components-demo" element={<ComponentsDemo />} />
+          
+          {/* Submission Management */}
+          <Route path="/my-submissions" element={<MySubmissions />} />
           <Route path="/submit" element={<SubmitCV />} />
           <Route path="/submit/success" element={<SubmissionSuccess />} />
+          
+          {/* Chat & Download */}
           <Route path="/chat/:id" element={<ClientChat />} />
           <Route path="/download/:id" element={<CVDownload />} />
         </Routes>
