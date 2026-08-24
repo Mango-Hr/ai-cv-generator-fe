@@ -91,7 +91,7 @@ export default function ClientChat() {
             <Button
               variant="ghost"
               icon={<ArrowLeft />}
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/my-submissions')}
               title="Go back"
             >
               Back
