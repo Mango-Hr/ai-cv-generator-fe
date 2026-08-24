@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Check, ArrowLeft, ArrowRight, Plus, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Header from '../components/Header/Header'
@@ -109,6 +109,7 @@ Responsibilities:
 export default function SubmitCV() {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const [searchParams] = useSearchParams()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
@@ -170,6 +171,56 @@ export default function SubmitCV() {
       setErrors(prev => ({ ...prev, [field]: '' }))
     }
   }
+
+  // Load submission data from localStorage when ?resume=<submissionId> is present
+  useEffect(() => {
+    const resumeId = searchParams.get('resume')
+    if (resumeId) {
+      try {
+        const storedKey = `submission_${resumeId}`
+        const storedData = localStorage.getItem(storedKey)
+        
+        if (storedData) {
+          const parsed = JSON.parse(storedData)
+          console.log('Loaded submission data:', parsed)
+          
+          if (parsed.form_data) {
+            // Pre-fill the form with stored data
+            setFormData(prev => ({
+              ...prev,
+              // Personal info
+              firstName: parsed.form_data.personal?.firstName || prev.firstName,
+              lastName: parsed.form_data.personal?.lastName || prev.lastName,
+              email: parsed.form_data.personal?.email || prev.email,
+              phone: parsed.form_data.personal?.phone || prev.phone,
+              
+              // Job target
+              targetPosition: parsed.form_data.job_target?.targetPosition || prev.targetPosition,
+              targetCompany: parsed.form_data.job_target?.targetCompany || prev.targetCompany,
+              jobDescription: parsed.form_data.job_target?.jobDescription || prev.jobDescription,
+              priority: parsed.form_data.job_target?.priority || prev.priority,
+              existingCVUrl: parsed.form_data.job_target?.existingCVUrl || prev.existingCVUrl,
+              
+              // Collections
+              experiences: parsed.form_data.experiences || prev.experiences,
+              education: parsed.form_data.education || prev.education,
+              skills: parsed.form_data.skills || prev.skills,
+              certifications: parsed.form_data.certifications || prev.certifications,
+              customNotes: parsed.form_data.customNotes || prev.customNotes,
+            }))
+            
+            console.log('✅ Form pre-filled with submission data')
+            toast.success('Resuming previous submission...')
+          }
+        } else {
+          console.warn('No stored data found for submission:', resumeId)
+        }
+      } catch (error) {
+        console.error('Error loading submission data:', error)
+        toast.error('Failed to load submission data')
+      }
+    }
+  }, [searchParams, toast])
 
   const autoFillForm = () => {
     setFormData(SAMPLE_DATA.formData)
@@ -443,6 +494,28 @@ export default function SubmitCV() {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
+        phone: formData.phone,
+        created_at: new Date().toISOString(),
+        form_data: {
+          personal: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+          },
+          job_target: {
+            targetPosition: formData.targetPosition,
+            targetCompany: formData.targetCompany,
+            jobDescription: formData.jobDescription,
+            priority: formData.priority,
+            existingCVUrl: formData.existingCVUrl,
+          },
+          experiences: formData.experiences,
+          education: formData.education,
+          skills: formData.skills,
+          certifications: formData.certifications,
+          customNotes: formData.customNotes,
+        },
       }
       
       localStorage.setItem(`submission_${submissionId}`, JSON.stringify(storedData))

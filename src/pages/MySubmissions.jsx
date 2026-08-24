@@ -189,10 +189,10 @@ export default function MySubmissions() {
                     <button
                       className="submission-card__button submission-card__button--edit"
                       onClick={() => handleResumeForm(submission.id)}
-                      title="Resume this form"
+                      title="Edit this submission"
                     >
                       <Edit2 size={18} />
-                      <span>Resume</span>
+                      <span>Edit</span>
                     </button>
 
                     <button
