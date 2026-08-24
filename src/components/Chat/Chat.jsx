@@ -358,7 +358,7 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
               placeholder="Type your message..."
               value={inputMessage}
               onChange={handleTyping}
-              disabled={isSending || !isConnected}
+              disabled={isSending}
               rows={1}
               style={{ minHeight: '40px', maxHeight: '100px' }}
             />
@@ -377,7 +377,7 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
               type="button"
               className="chat__file-button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isSending || !isConnected}
+              disabled={isSending}
               title="Attach files"
             >
               <Paperclip size={18} />
@@ -386,7 +386,7 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
             <button
               type="submit"
               className="chat__send-button"
-              disabled={isSending || !isConnected || (!inputMessage.trim() && selectedFiles.length === 0)}
+              disabled={isSending || (!inputMessage.trim() && selectedFiles.length === 0)}
               title="Send message"
             >
               {isSending ? (
