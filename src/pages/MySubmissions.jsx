@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, MessageSquare, Edit2, Trash2, Plus } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Trash2, Plus } from 'lucide-react'
 import Header from '../components/Header/Header'
 import Button from '../components/shared/Button'
 import './MySubmissions.css'
@@ -51,10 +51,6 @@ export default function MySubmissions() {
 
     loadSubmissions()
   }, [])
-
-  const handleResumeForm = (submissionId) => {
-    navigate(`/submit?resume=${submissionId}`)
-  }
 
   const handleViewChat = (submissionId) => {
     navigate(`/chat/${submissionId}`)
@@ -184,15 +180,6 @@ export default function MySubmissions() {
                     >
                       <MessageSquare size={18} />
                       <span>Chat</span>
-                    </button>
-
-                    <button
-                      className="submission-card__button submission-card__button--edit"
-                      onClick={() => handleResumeForm(submission.id)}
-                      title="Edit this submission"
-                    >
-                      <Edit2 size={18} />
-                      <span>Edit</span>
                     </button>
 
                     <button
