@@ -49,11 +49,11 @@ export default function ClientChat() {
     }
   }, [submissionId])
 
-  const handleBackClick = (e) => {
-    e.preventDefault()
-    console.log('Back button clicked - navigating to /my-submissions')
-    console.log('Current location:', window.location.pathname)
-    navigate('/my-submissions', { replace: false })
+  const handleBackClick = () => {
+    console.log('✅ Back button clicked in ClientChat')
+    console.log('Current URL:', window.location.pathname)
+    console.log('Navigating to: /my-submissions')
+    navigate('/my-submissions')
   }
 
   if (error) {
