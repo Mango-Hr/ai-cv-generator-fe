@@ -49,6 +49,13 @@ export default function ClientChat() {
     }
   }, [submissionId])
 
+  const handleBackClick = (e) => {
+    e.preventDefault()
+    console.log('Back button clicked - navigating to /my-submissions')
+    console.log('Current location:', window.location.pathname)
+    navigate('/my-submissions', { replace: false })
+  }
+
   if (error) {
     return (
       <>
@@ -59,7 +66,7 @@ export default function ClientChat() {
               <Button
                 variant="ghost"
                 icon={<ArrowLeft />}
-                onClick={() => navigate('/my-submissions')}
+                onClick={handleBackClick}
               >
                 Back
               </Button>
@@ -91,8 +98,8 @@ export default function ClientChat() {
             <Button
               variant="ghost"
               icon={<ArrowLeft />}
-              onClick={() => navigate('/my-submissions')}
-              title="Go back"
+              onClick={handleBackClick}
+              title="Go back to My Submissions"
             >
               Back
             </Button>
