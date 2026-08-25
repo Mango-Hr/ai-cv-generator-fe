@@ -175,48 +175,60 @@ export default function SubmitCV() {
   // Load submission data from localStorage when ?resume=<submissionId> is present
   useEffect(() => {
     const resumeId = searchParams.get('resume')
+    console.log('🔍 Resume param check - resumeId:', resumeId)
+    
     if (resumeId) {
       try {
         const storedKey = `submission_${resumeId}`
         const storedData = localStorage.getItem(storedKey)
         
+        console.log('📦 Looking for:', storedKey)
+        console.log('📦 Found:', storedData ? `${storedData.length} chars` : 'null')
+        
         if (storedData) {
           const parsed = JSON.parse(storedData)
-          console.log('Loaded submission data:', parsed)
+          console.log('✅ Parsed data keys:', Object.keys(parsed))
+          console.log('✅ Has form_data:', !!parsed.form_data)
+          console.log('✅ Form data structure:', parsed.form_data)
           
           if (parsed.form_data) {
             // Pre-fill the form with stored data
-            setFormData(prev => ({
-              ...prev,
+            const newFormData = {
               // Personal info
-              firstName: parsed.form_data.personal?.firstName || prev.firstName,
-              lastName: parsed.form_data.personal?.lastName || prev.lastName,
-              email: parsed.form_data.personal?.email || prev.email,
-              phone: parsed.form_data.personal?.phone || prev.phone,
+              firstName: parsed.form_data.personal?.firstName || '',
+              lastName: parsed.form_data.personal?.lastName || '',
+              email: parsed.form_data.personal?.email || '',
+              phone: parsed.form_data.personal?.phone || '',
               
               // Job target
-              targetPosition: parsed.form_data.job_target?.targetPosition || prev.targetPosition,
-              targetCompany: parsed.form_data.job_target?.targetCompany || prev.targetCompany,
-              jobDescription: parsed.form_data.job_target?.jobDescription || prev.jobDescription,
-              priority: parsed.form_data.job_target?.priority || prev.priority,
-              existingCVUrl: parsed.form_data.job_target?.existingCVUrl || prev.existingCVUrl,
+              targetPosition: parsed.form_data.job_target?.targetPosition || '',
+              targetCompany: parsed.form_data.job_target?.targetCompany || '',
+              jobDescription: parsed.form_data.job_target?.jobDescription || '',
+              priority: parsed.form_data.job_target?.priority || 'normal',
+              existingCVUrl: parsed.form_data.job_target?.existingCVUrl || '',
               
               // Collections
-              experiences: parsed.form_data.experiences || prev.experiences,
-              education: parsed.form_data.education || prev.education,
-              skills: parsed.form_data.skills || prev.skills,
-              certifications: parsed.form_data.certifications || prev.certifications,
-              customNotes: parsed.form_data.customNotes || prev.customNotes,
-            }))
+              experiences: Array.isArray(parsed.form_data.experiences) ? parsed.form_data.experiences : [],
+              education: Array.isArray(parsed.form_data.education) ? parsed.form_data.education : [],
+              skills: Array.isArray(parsed.form_data.skills) ? parsed.form_data.skills : [],
+              certifications: Array.isArray(parsed.form_data.certifications) ? parsed.form_data.certifications : [],
+              customNotes: parsed.form_data.customNotes || '',
+            }
+            
+            console.log('📝 New form data:', newFormData)
+            setFormData(newFormData)
             
             console.log('✅ Form pre-filled with submission data')
             toast.success('Resuming previous submission...')
+          } else {
+            console.warn('❌ No form_data found in parsed submission')
           }
         } else {
-          console.warn('No stored data found for submission:', resumeId)
+          console.warn('❌ No stored data found for submission:', storedKey)
         }
       } catch (error) {
-        console.error('Error loading submission data:', error)
+        console.error('❌ Error loading submission data:', error)
+        console.error('Stack:', error.stack)
         toast.error('Failed to load submission data')
       }
     }

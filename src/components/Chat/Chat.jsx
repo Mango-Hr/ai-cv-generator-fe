@@ -20,14 +20,6 @@ const formatTime = (dateString) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-const getInitials = (name) => {
-  return name
-    ?.split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase() || 'U'
-}
-
 export default function Chat({ submissionId, accessToken, userName = 'You' }) {
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
@@ -264,10 +256,6 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className={`chat__message-avatar ${msg.sender_type === 'staff' ? 'chat__message-avatar--staff' : ''}`}>
-                    {getInitials(msg.sender_name)}
-                  </div>
-
                   <div className="chat__message-content">
                     <div className="chat__message-header">
                       <span className="chat__message-sender">{msg.sender_name}</span>
