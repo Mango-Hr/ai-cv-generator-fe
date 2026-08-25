@@ -60,7 +60,7 @@ export default function SubmissionSuccess() {
             </p>
 
             {/* Submission ID Card */}
-            <Card className="submission-success__id-card">
+            {/* <Card className="submission-success__id-card">
               <CardBody>
                 <div className="submission-success__id">
                   <div>
@@ -80,7 +80,7 @@ export default function SubmissionSuccess() {
                   </Button>
                 </div>
               </CardBody>
-            </Card>
+            </Card> */}
 
             {/* Next Steps */}
             <div className="submission-success__steps">
