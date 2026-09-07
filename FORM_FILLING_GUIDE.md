@@ -1,115 +1,106 @@
 # Resume Form Filling Guide
 
-## Backend Schema vs Form Fields
-
-The backend expects the following data structure. Here's how to fill each field:
+The SubmitCV form collects the client's full intake profile. The top-level API
+fields (`first_name`, `last_name`, `email`, `phone`, `target_position`, ...)
+preserve the documented backend contract; all new intake fields are delivered in
+`raw_data`. Here's how each step maps to the payload:
 
 ---
 
-## **Step 1: Personal Information**
+## **Step 1: Basic Profile & Contact**
 
 ### Required Fields
 
 | Form Field | Backend Field | Type | Example | Rules |
 |-----------|--------------|------|---------|-------|
-| First Name | `first_name` | String | "John" | Non-empty, letters only |
-| Last Name | `last_name` | String | "Doe" | Non-empty, letters only |
+| First Name | `first_name` | String | "John" | Non-empty |
+| Last Name | `last_name` | String | "Doe" | Non-empty |
 | Email | `email` | String | "john@example.com" | Valid email format |
+| Resume File | `raw_data.resume_file_name` | String | "John_Doe_Resume.pdf" | PDF or DOCX only (max 10MB) |
 
 ### Optional Fields
 
 | Form Field | Backend Field | Type | Example |
 |-----------|--------------|------|---------|
-| Phone | `phone` | String | "+1-555-123-4567" or "5551234567" |
+| Middle Name | `raw_data.middle_name` | String | "Michael" |
+| Date of Birth | `raw_data.date_of_birth` | Date | "1990-04-12" |
+| Phone | `phone` | String | "+1-555-123-4567" |
+| Full Address | `raw_data.address` | String | "123 Main St, San Francisco, CA 94105, USA" |
+| LinkedIn URL | `raw_data.linkedin_url` | String (URL) | "https://linkedin.com/in/johndoe" |
+| Portfolio / GitHub | `raw_data.portfolio_github_url` | String (URL) | "https://github.com/johndoe" |
+
+> **Note on file upload:** the current API accepts JSON only, so only the file
+> name/size/type metadata is transmitted (`raw_data.resume_file_name`). A
+> multipart upload endpoint is needed to send the actual file bytes.
 
 ---
 
-## **Step 2: Job Target**
+## **Step 2: Job Preferences**
 
 ### Required Fields
 
 | Form Field | Backend Field | Type | Example | Rules |
 |-----------|--------------|------|---------|-------|
-| Target Position | `target_position` | String | "Senior React Developer" | Non-empty |
-| Job Description | `job_description` | String | "5+ years React experience..." | Non-empty, paste the job posting here |
+| Desired Job Title(s) | `target_position` / `raw_data.desired_job_titles` | String | "Senior React Developer, Frontend Engineer" | Non-empty, comma-separated for multiple |
 
 ### Optional Fields
 
 | Form Field | Backend Field | Type | Example |
 |-----------|--------------|------|---------|
-| Target Company | `target_company` | String | "Google" |
-| Priority | `priority` | String | "normal", "high", or "urgent" |
-| Existing CV URL | `existing_cv_url` | String (URL) | "https://example.com/resume.pdf" |
+| Preferred Work Arrangement | `raw_data.preferred_work_arrangement` | String | "remote", "hybrid", or "onsite" |
+| Expected Salary Range | `raw_data.expected_salary_range` | String | "$120,000 - $150,000" |
+| Date Available to Start | `raw_data.date_available_to_start` | Date | "2026-10-01" |
+| Companies to Exclude | `raw_data.companies_to_exclude` | String | "Google, Meta" |
 
 ---
 
-## **Step 3: Work Experience**
+## **Step 3: Eligibility**
 
-### Required (Add at least 1)
+All optional.
+
+| Form Field | Backend Field | Type | Example |
+|-----------|--------------|------|---------|
+| Active Security Clearance | `raw_data.active_security_clearance` | String | "yes" / "no" |
+| Citizenship / Work Authorization | `raw_data.citizenship_work_authorization` | String | "US Citizen", "Green Card", "H-1B" |
+| Visa Sponsorship Needed | `raw_data.visa_sponsorship_needed` | String | "yes" / "no" |
+| Non-Compete / Restrictive Obligations | `raw_data.non_compete_obligations` | String | "yes" / "no" |
+
+---
+
+## **Step 4: References**
+
+Optional, repeatable. Each entry maps to `raw_data.references[]`:
 
 | Form Field | Backend Field | Type | Example | Rules |
 |-----------|--------------|------|---------|-------|
-| Company | `company` | String | "Google" | Non-empty |
-| Job Title | `role` | String | "Senior Engineer" | Non-empty |
-| Start Date | `start_date` | String (ISO format) | "2020-01-15" or "01/15/2020" | Non-empty |
-| Description | `description` | String | "Led team of 5 engineers..." | Non-empty, describe your responsibilities |
-
-### Optional
-
-| Form Field | Backend Field | Type | Example |
-|-----------|--------------|------|---------|
-| End Date | `end_date` | String | "2024-06-30" or leave blank if current job |
-
-**Date Format:** Any standard format works:
-- `2024-06-30` (YYYY-MM-DD) ✅
-- `06/30/2024` (MM/DD/YYYY) ✅
-- `30-06-2024` (DD-MM-YYYY) ✅
+| Name | `name` | String | "Jane Smith" | Non-empty |
+| Email | `email` | String | "jane@example.com" | Valid email format |
+| Phone | `phone` | String | "+1-555-987-6543" | Non-empty |
+| Company | `company` | String | "Acme Corp" | Optional |
 
 ---
 
-## **Step 4: Education**
+## **Step 5: EEO & Demographics**
 
-### Required (Add at least 1)
+Voluntary — the form states responses do not affect consideration. All fields
+map under `raw_data.eeo` and include a "Prefer not to say" option.
 
-| Form Field | Backend Field | Type | Example | Rules |
-|-----------|--------------|------|---------|-------|
-| Institution | `institution` | String | "MIT" or "Massachusetts Institute of Technology" | Non-empty |
-| Degree | `degree` | String | "BS", "BA", "MS", "PhD", "Associate" | Non-empty |
-| Start Date | `start_date` | String (ISO format) | "2016-09-01" | Non-empty |
-
-### Optional
-
-| Form Field | Backend Field | Type | Example |
-|-----------|--------------|------|---------|
-| Field of Study | `field_of_study` | String | "Computer Science" |
-| End Date | `end_date` | String | "2020-05-31" |
-| Description | `description` | String | "Relevant coursework: AI, ML, Data Science" |
+| Form Field | Backend Field | Example |
+|-----------|--------------|---------|
+| Gender | `eeo.gender` | "male", "female", "non_binary", "prefer_not_to_say" |
+| Sexual Orientation | `eeo.sexual_orientation` | "heterosexual", "gay_lesbian", "bisexual", ... |
+| Race / Ethnicity | `eeo.race_ethnicity` | "asian", "black", "hispanic", "white", ... |
+| Veteran Status | `eeo.veteran_status` | "veteran", "not_veteran", "prefer_not_to_say" |
+| Disability Status | `eeo.disability_status` | "disability", "no_disability", "prefer_not_to_say" |
+| Notes | `eeo.notes` | Free text |
 
 ---
 
-## **Step 5: Skills & Certifications**
+## **Step 6: Review**
 
-### Skills
-
-- **How to add:** Type a skill and press Enter or click Add
-- **Examples:** "JavaScript", "Python", "Project Management", "Leadership"
-- **Required?** No, but recommended
-- **Backend field:** `raw_data.skills` (array of strings)
-
-### Certifications (Optional)
-
-| Form Field | Backend Field | Type | Example |
-|-----------|--------------|------|---------|
-| Name | `name` | String | "AWS Solutions Architect" |
-| Issuing Organization | `issuing_organization` | String | "Amazon" |
-| Issue Date | `issue_date` | String | "2022-06-15" |
-| Expiration Date | `expiration_date` | String | "2025-06-15" |
-
-### Custom Notes (Optional)
-
-- **Purpose:** Additional info about you
-- **Example:** "Available immediately", "Open to remote roles"
-- **Backend field:** `raw_data.custom_notes`
+- Review all submitted information
+- Edit any section
+- Click "Build Resume" to send to backend
 
 ---
 
@@ -121,58 +112,43 @@ The backend expects the following data structure. Here's how to fill each field:
   "last_name": "Doe",
   "email": "john.doe@example.com",
   "phone": "+1-555-123-4567",
-  "target_position": "Senior React Developer",
-  "target_company": "Google",
-  "priority": "high",
-  "job_description": "We are looking for a Senior React Developer with 5+ years of experience. Must know TypeScript, Redux, testing frameworks.",
+  "target_position": "Senior React Developer, Frontend Engineer",
+  "target_company": "",
+  "priority": "normal",
+  "job_description": "",
   "existing_cv_url": "",
   "raw_data": {
-    "education": [
+    "middle_name": "Michael",
+    "date_of_birth": "1990-04-12",
+    "address": "123 Main Street, Apt 4B, San Francisco, CA 94105, USA",
+    "linkedin_url": "https://linkedin.com/in/johndoe",
+    "portfolio_github_url": "https://github.com/johndoe",
+    "resume_file_name": "John_Doe_Resume.pdf",
+    "desired_job_titles": "Senior React Developer, Frontend Engineer",
+    "preferred_work_arrangement": "hybrid",
+    "expected_salary_range": "$120,000 - $150,000",
+    "date_available_to_start": "2026-10-01",
+    "companies_to_exclude": "Google, Meta",
+    "active_security_clearance": "no",
+    "citizenship_work_authorization": "US Citizen",
+    "visa_sponsorship_needed": "no",
+    "non_compete_obligations": "no",
+    "references": [
       {
-        "institution": "MIT",
-        "degree": "BS",
-        "field_of_study": "Computer Science",
-        "start_date": "2016-09-01",
-        "end_date": "2020-05-31",
-        "description": "Relevant coursework: AI, ML, Data Science"
+        "name": "Jane Smith",
+        "email": "jane.smith@example.com",
+        "phone": "+1-555-987-6543",
+        "company": "Acme Corp"
       }
     ],
-    "experience": [
-      {
-        "company": "Google",
-        "role": "Senior Software Engineer",
-        "start_date": "2021-06-01",
-        "end_date": "",
-        "description": "Led a team of 5 engineers building the React component library. Implemented 50+ reusable components used by 10 internal projects. Improved performance by 40%."
-      },
-      {
-        "company": "Facebook",
-        "role": "Software Engineer",
-        "start_date": "2020-07-01",
-        "end_date": "2021-05-31",
-        "description": "Built features for Facebook Messenger using React. Mentored 2 junior engineers."
-      }
-    ],
-    "skills": [
-      "JavaScript",
-      "TypeScript",
-      "React",
-      "Redux",
-      "Node.js",
-      "PostgreSQL",
-      "AWS",
-      "Docker",
-      "Git"
-    ],
-    "certifications": [
-      {
-        "name": "AWS Solutions Architect Professional",
-        "issuing_organization": "Amazon",
-        "issue_date": "2022-06-15",
-        "expiration_date": "2025-06-15"
-      }
-    ],
-    "custom_notes": "Available immediately. Prefer remote roles. Open to contracts or full-time."
+    "eeo": {
+      "gender": "male",
+      "sexual_orientation": "prefer_not_to_say",
+      "race_ethnicity": "white",
+      "veteran_status": "not_veteran",
+      "disability_status": "no_disability",
+      "notes": "Open to relocation. Available immediately."
+    }
   }
 }
 ```
@@ -182,114 +158,69 @@ The backend expects the following data structure. Here's how to fill each field:
 ## **Common "Bad Request" Errors & Fixes**
 
 ### Error 1: Missing Required Fields
-**Symptoms:** Bad request with 400 error  
+**Symptoms:** Bad request with 400 error
 **Fix:** Ensure all required fields are filled:
 - ✅ First Name
 - ✅ Last Name
 - ✅ Email (valid format)
-- ✅ Target Position
-- ✅ Job Description
-- ✅ At least 1 Experience entry
-- ✅ At least 1 Education entry
+- ✅ Desired Job Title(s)
+- ✅ Resume file uploaded (PDF/DOCX)
 
 ### Error 2: Invalid Email Format
-**Symptoms:** "email" field rejected  
+**Symptoms:** "email" field rejected
 **Fix:** Use format: `user@domain.com`
 
-### Error 3: Empty Arrays
-**Symptoms:** Experiences or education show as empty  
-**Fix:** Make sure you click "Add Experience" or "Add Education" buttons after filling in the form. Don't just fill the fields.
+### Error 3: Unsupported Resume File Type
+**Symptoms:** Upload rejected
+**Fix:** Use PDF or DOCX only — other file types are blocked client-side.
 
-### Error 4: Date Format Issues
-**Symptoms:** Dates rejected  
-**Fix:** Use any standard date format:
-- ✅ `2024-06-30`
-- ✅ `06/30/2024`
-- ✅ `June 30, 2024`
-
-### Error 5: Special Characters
-**Symptoms:** Description or name fields rejected  
-**Fix:** Avoid special characters like `<>{}[]` - stick to letters, numbers, spaces, and basic punctuation (., -, (), &).
+### Error 4: Reference Entry Rejected
+**Symptoms:** Reference not added
+**Fix:** Every reference needs a name, a valid email, and a phone number.
 
 ---
 
 ## **Step-by-Step Form Filling Checklist**
 
-### Step 1: Personal Information ✅
+### Step 1: Basic Profile & Contact ✅
 - [ ] Enter first name (e.g., "John")
+- [ ] (Optional) Enter middle name
 - [ ] Enter last name (e.g., "Doe")
 - [ ] Enter email (e.g., "john@example.com")
+- [ ] (Optional) Enter date of birth
 - [ ] (Optional) Enter phone
-- [ ] Click "Next"
+- [ ] (Optional) Enter full address
+- [ ] (Optional) Enter LinkedIn URL
+- [ ] (Optional) Enter portfolio/GitHub link
+- [ ] Upload resume (PDF or DOCX)
+- [ ] Click "Next Step"
 
-### Step 2: Job Target ✅
-- [ ] Enter target position (e.g., "Senior React Developer")
-- [ ] Enter job description (paste the full job posting here)
-- [ ] (Optional) Enter target company
-- [ ] (Optional) Select priority level
-- [ ] Click "Next"
+### Step 2: Job Preferences ✅
+- [ ] Enter desired job title(s) (e.g., "Senior React Developer")
+- [ ] (Optional) Select preferred work arrangement
+- [ ] (Optional) Enter expected salary range
+- [ ] (Optional) Enter date available to start
+- [ ] (Optional) Enter companies to exclude
+- [ ] Click "Next Step"
 
-### Step 3: Work Experience ✅
-- [ ] Enter company name
-- [ ] Enter job title
-- [ ] Enter start date
-- [ ] (Optional) Enter end date (leave empty if current job)
-- [ ] Enter description of what you did
-- [ ] Click "Add Experience"
-- [ ] Repeat for additional jobs (add at least 1)
-- [ ] Click "Next"
+### Step 3: Eligibility ✅
+- [ ] (Optional) Select active security clearance
+- [ ] (Optional) Enter citizenship / work authorization
+- [ ] (Optional) Select visa sponsorship needed
+- [ ] (Optional) Select non-compete / restrictive obligations
+- [ ] Click "Next Step"
 
-### Step 4: Education ✅
-- [ ] Enter institution name
-- [ ] Enter degree (BS, MS, BA, etc.)
-- [ ] Enter start date
-- [ ] (Optional) Enter end date
-- [ ] (Optional) Enter field of study
-- [ ] (Optional) Enter description
-- [ ] Click "Add Education"
-- [ ] Repeat if needed (add at least 1)
-- [ ] Click "Next"
+### Step 4: References ✅
+- [ ] (Optional) Enter reference name, email, phone, company
+- [ ] Click "Add Reference"
+- [ ] Repeat for additional references
+- [ ] Click "Next Step"
 
-### Step 5: Skills & Certifications ✅
-- [ ] Add 5-10 relevant skills
-- [ ] (Optional) Add certifications
-- [ ] (Optional) Add custom notes
-- [ ] Click "Next"
+### Step 5: EEO & Demographics ✅
+- [ ] (Voluntary) Select gender, sexual orientation, race/ethnicity, veteran status, disability status
+- [ ] (Optional) Enter notes
+- [ ] Click "Next Step"
 
 ### Step 6: Review ✅
 - [ ] Review all information
-- [ ] Click "Submit Resume" to send to backend
-
----
-
-## **Backend is Saying "Bad Request"?**
-
-Check the browser console (F12 → Console tab):
-
-```javascript
-// You should see logged:
-Making submission request to: https://ai-cv-generator-be-production.up.railway.app/api/v1/public/submissions
-API_BASE_URL: https://ai-cv-generator-be-production.up.railway.app
-
-// Then the submission data object
-// Look for any empty required fields
-```
-
-If you see the submission data logged, copy it and verify:
-1. `first_name`, `last_name`, `email` are NOT empty
-2. `target_position`, `job_description` are NOT empty
-3. `raw_data.experience` is NOT an empty array
-4. `raw_data.education` is NOT an empty array
-5. Email is in valid format (contains `@` and `.`)
-
----
-
-## **Help! Still Getting Bad Request?**
-
-1. **Open DevTools** (F12 or Right-click → Inspect)
-2. **Go to Console tab**
-3. **Fill the form and submit**
-4. **Look for the logged submission data**
-5. **Share the logged data** so we can see exactly what's being sent
-
-The console will show exactly what payload was sent, which helps debug the issue.
+- [ ] Click "Build Resume" to send to backend

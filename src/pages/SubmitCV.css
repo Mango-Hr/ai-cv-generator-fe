@@ -166,6 +166,41 @@
   gap: var(--space-4);
 }
 
+.submit-cv__form-row--three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* ============================================
+   Voluntary (EEO) Note
+   ============================================ */
+
+.submit-cv__voluntary-note {
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+.submit-cv__voluntary-note strong {
+  color: var(--color-text-primary);
+}
+
+/* ============================================
+   Uploaded File Note
+   ============================================ */
+
+.submit-cv__uploaded-note {
+  font-size: var(--text-sm);
+  color: var(--color-deco-blue);
+  margin-top: var(--space-2);
+  margin-bottom: 0;
+  font-weight: 500;
+}
+
 /* ============================================
    Error Messages
    ============================================ */
@@ -361,6 +396,10 @@
   }
 
   .submit-cv__form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .submit-cv__form-row--three {
     grid-template-columns: 1fr;
   }
 

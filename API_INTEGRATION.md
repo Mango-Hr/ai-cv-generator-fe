@@ -39,19 +39,45 @@ const response = await createSubmission({
   email: "john@example.com",
   phone: "+1234567890",
   target_position: "Senior Product Manager",
-  target_company: "Tech Corp",
+  target_company: "",
   priority: "normal",
-  job_description: "...",
+  job_description: "",
   existing_cv_url: "",
   raw_data: {
-    education: [...],
-    experience: [...],
-    skills: [...],
-    certifications: [...],
-    custom_notes: ""
+    middle_name: "Michael",
+    date_of_birth: "1990-04-12",
+    address: "123 Main Street, San Francisco, CA 94105, USA",
+    linkedin_url: "https://linkedin.com/in/johndoe",
+    portfolio_github_url: "https://github.com/johndoe",
+    resume_file_name: "John_Doe_Resume.pdf",
+    desired_job_titles: "Senior Product Manager",
+    preferred_work_arrangement: "hybrid",
+    expected_salary_range: "$120,000 - $150,000",
+    date_available_to_start: "2026-10-01",
+    companies_to_exclude: "",
+    active_security_clearance: "no",
+    citizenship_work_authorization: "US Citizen",
+    visa_sponsorship_needed: "no",
+    non_compete_obligations: "no",
+    references: [
+      { name: "Jane Smith", email: "jane@example.com", phone: "+1234567890", company: "Acme Corp" }
+    ],
+    eeo: {
+      gender: "male",
+      sexual_orientation: "prefer_not_to_say",
+      race_ethnicity: "white",
+      veteran_status: "not_veteran",
+      disability_status: "no_disability",
+      notes: "Available immediately."
+    }
   }
 })
 ```
+
+> **File upload note:** the API currently accepts JSON only. The resume file is
+> validated client-side (PDF/DOCX, max 10MB) and its metadata
+> (`raw_data.resume_file_name`) is transmitted. A multipart upload endpoint is
+> required to send the actual file bytes.
 
 #### `getSubmissionStatus(submissionId)`
 - **Endpoint:** `GET /api/v1/public/submissions/:id`
@@ -72,20 +98,41 @@ The SubmitCV form collects and transforms data as follows:
 ### Frontend Form Data
 ```javascript
 {
+  // Basic profile & contact
   firstName: "",
+  middleName: "",
   lastName: "",
   email: "",
+  dateOfBirth: "",
   phone: "",
-  targetPosition: "",
-  targetCompany: "",
-  jobDescription: "",
-  priority: "normal",
-  existingCVUrl: "",
-  experiences: [],
-  education: [],
-  skills: [],
-  certifications: [],
-  customNotes: ""
+  address: "",
+  linkedinUrl: "",
+  portfolioGithubUrl: "",
+  resumeFile: null, // { name, size, type } metadata
+
+  // Job preferences
+  desiredJobTitles: "",
+  workArrangement: "",
+  salaryRange: "",
+  availableToStart: "",
+  companiesToExclude: "",
+
+  // Eligibility
+  securityClearance: "",
+  citizenship: "",
+  visaSponsorship: "",
+  nonCompete: "",
+
+  // References
+  references: [],
+
+  // EEO & demographics (voluntary)
+  gender: "",
+  sexualOrientation: "",
+  raceEthnicity: "",
+  veteranStatus: "",
+  disabilityStatus: "",
+  notes: ""
 }
 ```
 
@@ -97,80 +144,82 @@ The SubmitCV form collects and transforms data as follows:
   "email": "user@example.com",
   "phone": "string",
   "target_position": "string",
-  "target_company": "string",
-  "priority": "normal|high|urgent",
-  "job_description": "string",
-  "existing_cv_url": "string",
+  "target_company": "",
+  "priority": "normal",
+  "job_description": "",
+  "existing_cv_url": "",
   "raw_data": {
-    "education": [
-      {
-        "institution": "string",
-        "degree": "string",
-        "field_of_study": "string",
-        "start_date": "YYYY-MM-DD",
-        "end_date": "YYYY-MM-DD",
-        "description": "string"
-      }
-    ],
-    "experience": [
-      {
-        "company": "string",
-        "role": "string",
-        "start_date": "YYYY-MM-DD",
-        "end_date": "YYYY-MM-DD",
-        "description": "string"
-      }
-    ],
-    "skills": ["string"],
-    "certifications": [
+    "middle_name": "string",
+    "date_of_birth": "YYYY-MM-DD",
+    "address": "string",
+    "linkedin_url": "string",
+    "portfolio_github_url": "string",
+    "resume_file_name": "string",
+    "desired_job_titles": "string",
+    "preferred_work_arrangement": "remote|hybrid|onsite",
+    "expected_salary_range": "string",
+    "date_available_to_start": "YYYY-MM-DD",
+    "companies_to_exclude": "string",
+    "active_security_clearance": "yes|no",
+    "citizenship_work_authorization": "string",
+    "visa_sponsorship_needed": "yes|no",
+    "non_compete_obligations": "yes|no",
+    "references": [
       {
         "name": "string",
-        "issuing_organization": "string",
-        "issue_date": "YYYY-MM-DD",
-        "expiration_date": "YYYY-MM-DD"
+        "email": "string",
+        "phone": "string",
+        "company": "string"
       }
     ],
-    "custom_notes": "string"
+    "eeo": {
+      "gender": "string",
+      "sexual_orientation": "string",
+      "race_ethnicity": "string",
+      "veteran_status": "string",
+      "disability_status": "string",
+      "notes": "string"
+    }
   }
 }
 ```
 
 ## Form Flow
 
-### Step 1: Personal Information
+### Step 1: Basic Profile & Contact
 - First Name (required)
+- Middle Name (optional)
 - Last Name (required)
 - Email (required)
+- Date of Birth (optional)
 - Phone (optional)
+- Full Address (optional)
+- LinkedIn URL (optional)
+- Portfolio / GitHub Link (optional)
+- Resume File upload (required, PDF/DOCX only)
 
-### Step 2: Job Target
-- Target Position (required)
-- Target Company (optional)
-- Priority Level (normal/high/urgent)
-- Job Description (optional)
-- Existing CV URL (optional)
+### Step 2: Job Preferences
+- Desired Job Title(s) (required)
+- Preferred Work Arrangement (Remote/Hybrid/Onsite, optional)
+- Expected Salary Range (optional)
+- Date Available to Start (optional)
+- Companies to Exclude (optional)
 
-### Step 3: Work Experience
-- Company Name
-- Job Title
-- Start Date
-- End Date
-- Description
-- Can add multiple entries
+### Step 3: Eligibility
+- Active Security Clearance (Yes/No, optional)
+- Citizenship / Work Authorization (optional)
+- Visa Sponsorship Needed (Yes/No, optional)
+- Non-Compete / Restrictive Obligations (Yes/No, optional)
 
-### Step 4: Education
-- Institution
-- Degree
-- Field of Study
-- Start Date
-- End Date
-- Description
-- Can add multiple entries
+### Step 4: References
+- Name, Email, Phone, Company (optional, repeatable)
+- Each entry requires name, email, and phone
 
-### Step 5: Skills & Certifications
-- Skills (comma-separated list)
-- Certifications (name, organization, dates)
-- Additional Information / Custom Notes
+### Step 5: EEO & Demographics (voluntary)
+- Gender, Sexual Orientation, Race/Ethnicity, Veteran Status, Disability Status
+- Each includes a "Prefer not to say" option
+- Notes (optional)
+- Explicitly marked as voluntary and confidential; does not affect consideration
 
 ### Step 6: Review
 - Review all submitted information
@@ -208,7 +257,7 @@ The integration includes:
 
 3. **Fill in Form**
    - Complete all steps of the form
-   - Add at least one experience and education entry
+   - Upload a resume file (PDF or DOCX)
 
 4. **Submit**
    - Click "Submit CV" button
