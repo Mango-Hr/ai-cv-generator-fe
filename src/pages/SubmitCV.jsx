@@ -7,7 +7,7 @@ import Button from '../components/shared/Button'
 import { Input, Textarea, Select } from '../components/shared/Input'
 import FileUpload from '../components/shared/FileUpload'
 import { useToast } from '../contexts/ToastContext'
-import { createSubmission } from '../services/submissionService'
+import { createSubmission, uploadFile } from '../services/submissionService'
 import './SubmitCV.css'
 
 const STEPS = [
@@ -21,10 +21,12 @@ const STEPS = [
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+// Backend enum: WorkArrangement
 const WORK_ARRANGEMENT_OPTIONS = [
   { value: 'remote', label: 'Remote' },
   { value: 'hybrid', label: 'Hybrid' },
   { value: 'onsite', label: 'Onsite' },
+  { value: 'flexible', label: 'Flexible' },
 ]
 
 const YES_NO_OPTIONS = [
@@ -32,42 +34,59 @@ const YES_NO_OPTIONS = [
   { value: 'no', label: 'No' },
 ]
 
+// Backend enum: SecurityClearance
+const SECURITY_CLEARANCE_OPTIONS = [
+  { value: 'none', label: 'No clearance' },
+  { value: 'confidential', label: 'Confidential' },
+  { value: 'secret', label: 'Secret' },
+  { value: 'top_secret', label: 'Top Secret' },
+  { value: 'top_secret_sci', label: 'Top Secret / SCI' },
+  { value: 'other', label: 'Other clearance' },
+]
+
+// Backend enum: Gender
 const GENDER_OPTIONS = [
   { value: 'male', label: 'Male' },
   { value: 'female', label: 'Female' },
   { value: 'non_binary', label: 'Non-binary' },
+  { value: 'other', label: 'Other' },
   { value: 'prefer_not_to_say', label: 'Prefer not to say' },
 ]
 
+// Backend enum: SexualOrientation
 const SEXUAL_ORIENTATION_OPTIONS = [
   { value: 'heterosexual', label: 'Heterosexual / Straight' },
-  { value: 'gay_lesbian', label: 'Gay / Lesbian' },
+  { value: 'gay_or_lesbian', label: 'Gay / Lesbian' },
   { value: 'bisexual', label: 'Bisexual' },
-  { value: 'asexual', label: 'Asexual' },
   { value: 'other', label: 'Other' },
   { value: 'prefer_not_to_say', label: 'Prefer not to say' },
 ]
 
+// Backend enum: RaceEthnicity
 const RACE_ETHNICITY_OPTIONS = [
+  { value: 'american_indian_or_alaska_native', label: 'American Indian / Alaska Native' },
   { value: 'asian', label: 'Asian' },
-  { value: 'black', label: 'Black / African American' },
-  { value: 'hispanic', label: 'Hispanic / Latino' },
+  { value: 'black_or_african_american', label: 'Black / African American' },
+  { value: 'hispanic_or_latino', label: 'Hispanic / Latino' },
+  { value: 'native_hawaiian_or_pacific_islander', label: 'Native Hawaiian / Pacific Islander' },
   { value: 'white', label: 'White' },
-  { value: 'native_american', label: 'Native American / Indigenous' },
-  { value: 'two_or_more', label: 'Two or more races' },
+  { value: 'two_or_more_races', label: 'Two or more races' },
   { value: 'other', label: 'Other' },
   { value: 'prefer_not_to_say', label: 'Prefer not to say' },
 ]
 
+// Backend enum: VeteranStatus
 const VETERAN_STATUS_OPTIONS = [
   { value: 'veteran', label: 'Veteran' },
-  { value: 'not_veteran', label: 'Not a veteran' },
+  { value: 'not_a_veteran', label: 'Not a veteran' },
+  { value: 'active_duty', label: 'Active duty' },
   { value: 'prefer_not_to_say', label: 'Prefer not to say' },
 ]
 
+// Backend enum: DisabilityStatus
 const DISABILITY_STATUS_OPTIONS = [
-  { value: 'disability', label: 'I have a disability' },
-  { value: 'no_disability', label: 'I do not have a disability' },
+  { value: 'yes', label: 'Yes, I have a disability' },
+  { value: 'no', label: 'No, I do not have a disability' },
   { value: 'prefer_not_to_say', label: 'Prefer not to say' },
 ]
 
@@ -222,7 +241,7 @@ const SAMPLE_DATA = {
     companiesToExclude: 'Google, Meta',
 
     // Eligibility
-    securityClearance: 'no',
+    securityClearance: 'none',
     citizenship: 'US Citizen',
     visaSponsorship: 'no',
     nonCompete: 'no',
@@ -242,8 +261,8 @@ const SAMPLE_DATA = {
     gender: 'male',
     sexualOrientation: 'prefer_not_to_say',
     raceEthnicity: 'white',
-    veteranStatus: 'not_veteran',
-    disabilityStatus: 'no_disability',
+    veteranStatus: 'not_a_veteran',
+    disabilityStatus: 'no',
     notes: 'Open to relocation. Available immediately.',
   },
 }
@@ -255,6 +274,9 @@ export default function SubmitCV() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
+  // True when the user is editing a step reached from the Review page, so the
+  // next "Next Step" click returns to Review instead of the literal next step.
+  const [returnToReview, setReturnToReview] = useState(false)
 
   const [resumed] = useState(() => loadStoredSubmission(searchParams))
   const [formData, setFormData] = useState(() =>
@@ -297,6 +319,7 @@ export default function SubmitCV() {
     setFormData({ ...EMPTY_FORM_DATA })
     setCurrentReference({ name: '', email: '', phone: '', company: '' })
     setCurrentStep(1)
+    setReturnToReview(false)
     setErrors({})
     toast.success('Form cleared')
   }
@@ -377,8 +400,21 @@ export default function SubmitCV() {
     return true
   }
 
+  const handleEditFromReview = (step) => {
+    setReturnToReview(true)
+    setCurrentStep(step)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const nextStep = () => {
     if (!validateStep()) return
+    // Coming from an edit started on the Review page: go straight back to Review
+    if (returnToReview) {
+      setReturnToReview(false)
+      setCurrentStep(STEPS.length)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
     if (currentStep < STEPS.length) {
       setCurrentStep(currentStep + 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -399,63 +435,111 @@ export default function SubmitCV() {
     try {
       setIsSubmitting(true)
 
-      // Transform formData to API format.
-      // The top-level keys below preserve the documented backend contract
-      // (first_name, last_name, email, phone, ...). Every new intake field is
-      // delivered in raw_data so nothing from the new form is lost.
-      const submissionData = {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        target_position: formData.desiredJobTitles,
-        target_company: '',
-        priority: 'normal',
-        job_description: '',
-        existing_cv_url: '',
-        raw_data: {
-          middle_name: formData.middleName,
-          date_of_birth: formData.dateOfBirth,
-          address: formData.address,
-          linkedin_url: formData.linkedinUrl,
-          portfolio_github_url: formData.portfolioGithubUrl,
-          resume_file_name: formData.resumeFile?.name || '',
-          desired_job_titles: formData.desiredJobTitles,
-          preferred_work_arrangement: formData.workArrangement,
-          expected_salary_range: formData.salaryRange,
-          date_available_to_start: formData.availableToStart,
-          companies_to_exclude: formData.companiesToExclude,
-          active_security_clearance: formData.securityClearance,
-          citizenship_work_authorization: formData.citizenship,
-          visa_sponsorship_needed: formData.visaSponsorship,
-          non_compete_obligations: formData.nonCompete,
-          references: formData.references.map(ref => ({
-            name: ref.name,
-            email: ref.email,
-            phone: ref.phone,
-            company: ref.company,
-          })),
-          eeo: {
-            gender: formData.gender,
-            sexual_orientation: formData.sexualOrientation,
-            race_ethnicity: formData.raceEthnicity,
-            veteran_status: formData.veteranStatus,
-            disability_status: formData.disabilityStatus,
-            notes: formData.notes,
-          },
-        },
+      // 1. Upload the actual resume file first (POST /api/v1/public/upload →
+      //    Cloudinary) so the submission can carry a CDN URL.
+      let resumeFileUrl = null
+      const resumeFile = formData.resumeFile
+      if (resumeFile && resumeFile instanceof File) {
+        console.log('Uploading resume file:', resumeFile.name)
+        const uploadResult = await uploadFile(resumeFile, 'resumes')
+        resumeFileUrl = uploadResult.primary
+        if (!resumeFileUrl) {
+          throw new Error('File upload succeeded but no file URL was returned. Please try again.')
+        }
+        console.log('Resume uploaded to:', resumeFileUrl)
       }
 
+      // 2. Build the payload to match the backend CreateSubmission schema.
+      //    Only first_name, last_name and email are required — everything else
+      //    is optional, so empty values are omitted instead of sent as ''.
+      const splitList = (value) =>
+        (value || '')
+          .split(/[\n,]+/)
+          .map(item => item.trim())
+          .filter(Boolean)
+
+      const desiredTitles = splitList(formData.desiredJobTitles)
+      const excludedCompanies = splitList(formData.companiesToExclude)
+
+      const submissionData = {
+        // Required by the backend
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim(),
+        email: formData.email.trim(),
+
+        // Profile & contact
+        middle_name: formData.middleName.trim() || undefined,
+        date_of_birth: formData.dateOfBirth || undefined,
+        phone: formData.phone.trim() || undefined,
+        address_line: formData.address.trim() || undefined,
+        linkedin_url: formData.linkedinUrl.trim() || undefined,
+        portfolio_url: formData.portfolioGithubUrl.trim() || undefined,
+
+        // Resume
+        resume_file_url: resumeFileUrl || undefined,
+        resume_file_name: resumeFile?.name || undefined,
+
+        // Job preferences
+        desired_job_titles: desiredTitles.length > 0 ? desiredTitles : undefined,
+        preferred_work_arrangement: formData.workArrangement || undefined,
+        expected_salary_range: formData.salaryRange.trim() || undefined,
+        available_start_date: formData.availableToStart || undefined,
+        companies_to_exclude: excludedCompanies.length > 0 ? excludedCompanies : undefined,
+        target_position: desiredTitles[0] || undefined,
+        priority: 'normal',
+
+        // Eligibility (security_clearance & visa_sponsorship_required are
+        // backend enums — see SECURITY_CLEARANCE_OPTIONS / YES_NO_OPTIONS;
+        // non_compete_obligations is free text, so map the Yes/No answer)
+        security_clearance: formData.securityClearance || undefined,
+        citizenship_status: formData.citizenship.trim() || undefined,
+        visa_sponsorship_required: formData.visaSponsorship || undefined,
+        non_compete_obligations:
+          formData.nonCompete === 'yes' ? 'Yes' :
+          formData.nonCompete === 'no' ? 'None' : undefined,
+
+        // References (backend ProfessionalReference: name required, rest optional)
+        professional_references: formData.references.length > 0
+          ? formData.references.map(ref => ({
+              name: ref.name,
+              email: ref.email || undefined,
+              phone: ref.phone || undefined,
+              company: ref.company || undefined,
+            }))
+          : undefined,
+
+        // EEO & demographics (backend enums — see the option constants above)
+        gender: formData.gender || undefined,
+        sexual_orientation: formData.sexualOrientation || undefined,
+        race_ethnicity: formData.raceEthnicity || undefined,
+        veteran_status: formData.veteranStatus || undefined,
+        has_disability: formData.disabilityStatus || undefined,
+        notes: formData.notes.trim() || undefined,
+      }
+
+      // Drop undefined keys so only what the client filled in is sent
+      const payload = Object.fromEntries(
+        Object.entries(submissionData).filter(([, v]) => v !== undefined)
+      )
+
       // Call API
-      const response = await createSubmission(submissionData)
+      const response = await createSubmission(payload)
 
+      // 3. Extract identifiers defensively — the backend documents responses as
+      //    untyped, so check the common envelopes ({...}, {data: {...}}) plus a
+      //    few legacy field names.
       console.log('Response structure:', response)
-      console.log('Full response keys:', Object.keys(response))
-
-      // Store submission data in localStorage for chat access
-      // Backend returns: {status, status_code, message, data: {submission_id, access_token, ...}}
-      const submissionId = response.data?.submission_id || response.submission_id || response.id
-      const accessToken = response.data?.access_token || response.access_token
+      if (typeof response === 'object' && response !== null) {
+        console.log('Full response keys:', Object.keys(response))
+      }
+      const envelope = response && typeof response === 'object' ? (response.data ?? response) : {}
+      const submissionId =
+        envelope?.submission_id || envelope?.id ||
+        response?.submission_id || response?.id ||
+        envelope?.submission?.id || null
+      const accessToken =
+        envelope?.access_token || envelope?.client_access_token ||
+        response?.access_token || response?.token || null
 
       console.log('Extracted submissionId:', submissionId)
       console.log('Extracted accessToken:', accessToken ? `${accessToken.substring(0, 8)}...` : 'MISSING')
@@ -463,7 +547,7 @@ export default function SubmitCV() {
       if (!submissionId || !accessToken) {
         console.error('❌ Missing required fields in response!')
         console.error('Response:', response)
-        throw new Error('Invalid response from backend: missing submission_id or access_token')
+        throw new Error('The backend did not return a submission ID and access token. Please contact support.')
       }
 
       const storedData = {
@@ -472,6 +556,7 @@ export default function SubmitCV() {
         last_name: formData.lastName,
         email: formData.email,
         phone: formData.phone,
+        resume_file_url: resumeFileUrl,
         created_at: new Date().toISOString(),
         form_data: {
           ...formData,
@@ -527,7 +612,7 @@ export default function SubmitCV() {
                   }}
                   title="Auto-fill form with sample data for testing"
                 >
-                  📋 Auto-fill
+                   Auto-fill
                 </button>
                 <button
                   onClick={clearForm}
@@ -543,7 +628,7 @@ export default function SubmitCV() {
                   }}
                   title="Clear all form data"
                 >
-                  🗑️ Clear
+                   Clear
                 </button>
               </div>
             </div>
@@ -617,7 +702,7 @@ export default function SubmitCV() {
               )}
 
               {currentStep === 6 && (
-                <StepReview formData={formData} setCurrentStep={setCurrentStep} />
+                <StepReview formData={formData} onEdit={handleEditFromReview} />
               )}
 
               {/* Navigation Actions */}
@@ -644,7 +729,7 @@ export default function SubmitCV() {
                       onClick={nextStep}
                       disabled={isSubmitting}
                     >
-                      Next Step
+                      {returnToReview ? 'Back to Review' : 'Next Step'}
                     </Button>
                   ) : (
                     <Button
@@ -773,10 +858,7 @@ function StepProfileAndContact({ formData, updateField, errors }) {
           <FileUpload
             accept=".pdf,.doc,.docx"
             maxSize={10}
-            onUpload={(files) => updateField(
-              'resumeFile',
-              files[0] ? { name: files[0].name, size: files[0].size, type: files[0].type } : null
-            )}
+            onUpload={(files) => updateField('resumeFile', files[0] || null)}
             onRemove={() => updateField('resumeFile', null)}
             error={errors.resumeFile}
             helpText="Upload your most recent resume. PDF or DOCX only."
@@ -869,8 +951,9 @@ function StepEligibility({ formData, updateField, errors }) {
             placeholder="Select..."
             value={formData.securityClearance}
             onChange={(e) => updateField('securityClearance', e.target.value)}
-            options={YES_NO_OPTIONS}
+            options={SECURITY_CLEARANCE_OPTIONS}
             error={errors.securityClearance}
+            helpText="Highest level you currently hold"
           />
 
           <Select
@@ -1096,7 +1179,7 @@ function ReviewItem({ label, value }) {
   )
 }
 
-function StepReview({ formData, setCurrentStep }) {
+function StepReview({ formData, onEdit }) {
   return (
     <div className="submit-cv__form-card">
       <h2 className="submit-cv__form-title">Review Your Information</h2>
@@ -1109,7 +1192,7 @@ function StepReview({ formData, setCurrentStep }) {
         <div className="submit-cv__review-section">
           <div className="submit-cv__review-header">
             <h3 className="submit-cv__review-title">Basic Profile & Contact</h3>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentStep(1)}>
+            <Button variant="ghost" size="sm" onClick={() => onEdit(1)}>
               Edit
             </Button>
           </div>
@@ -1129,7 +1212,7 @@ function StepReview({ formData, setCurrentStep }) {
         <div className="submit-cv__review-section">
           <div className="submit-cv__review-header">
             <h3 className="submit-cv__review-title">Job Preferences</h3>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentStep(2)}>
+            <Button variant="ghost" size="sm" onClick={() => onEdit(2)}>
               Edit
             </Button>
           </div>
@@ -1146,12 +1229,12 @@ function StepReview({ formData, setCurrentStep }) {
         <div className="submit-cv__review-section">
           <div className="submit-cv__review-header">
             <h3 className="submit-cv__review-title">Eligibility</h3>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentStep(3)}>
+            <Button variant="ghost" size="sm" onClick={() => onEdit(3)}>
               Edit
             </Button>
           </div>
           <div className="submit-cv__review-content">
-            <ReviewItem label="Security clearance" value={optionLabel(YES_NO_OPTIONS, formData.securityClearance)} />
+            <ReviewItem label="Security clearance" value={optionLabel(SECURITY_CLEARANCE_OPTIONS, formData.securityClearance)} />
             <ReviewItem label="Citizenship / work auth" value={formData.citizenship} />
             <ReviewItem label="Visa sponsorship needed" value={optionLabel(YES_NO_OPTIONS, formData.visaSponsorship)} />
             <ReviewItem label="Non-compete obligations" value={optionLabel(YES_NO_OPTIONS, formData.nonCompete)} />
@@ -1162,7 +1245,7 @@ function StepReview({ formData, setCurrentStep }) {
         <div className="submit-cv__review-section">
           <div className="submit-cv__review-header">
             <h3 className="submit-cv__review-title">References ({formData.references.length})</h3>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentStep(4)}>
+            <Button variant="ghost" size="sm" onClick={() => onEdit(4)}>
               Edit
             </Button>
           </div>
@@ -1183,7 +1266,7 @@ function StepReview({ formData, setCurrentStep }) {
         <div className="submit-cv__review-section">
           <div className="submit-cv__review-header">
             <h3 className="submit-cv__review-title">EEO & Demographics</h3>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentStep(5)}>
+            <Button variant="ghost" size="sm" onClick={() => onEdit(5)}>
               Edit
             </Button>
           </div>
