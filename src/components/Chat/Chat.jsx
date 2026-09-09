@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Send, Paperclip, MessageCircle, Loader } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import chatService from '../../services/chatService'
+import { getClientAttachmentProxyUrl } from '../../utils/attachmentProxy'
 import './Chat.css'
 
 const formatTime = (dateString) => {
@@ -272,12 +273,11 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
                           {msg.attachments.map((attachment, idx) => (
                             <a
                               key={idx}
-                              href={attachment.url}
+                              href={getClientAttachmentProxyUrl(attachment, submissionId)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="chat__message-attachment"
-                              download
-                            >
+                              >
                               <Paperclip className="chat__attachment-icon" />
                               <span className="chat__attachment-name">{attachment.name}</span>
                             </a>
@@ -389,3 +389,5 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
     </div>
   )
 }
+
+
