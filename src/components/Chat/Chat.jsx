@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Send, Paperclip, MessageCircle, Loader } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import chatService from '../../services/chatService'
-import { getClientAttachmentProxyUrl } from '../../utils/attachmentProxy'
+import { openAttachment, downloadAttachment, getAttachmentName } from '../../utils/attachmentProxy'
 import './Chat.css'
 
 const formatTime = (dateString) => {
@@ -75,7 +75,7 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
         // Don't await - let it connect in the background
         chatService.connect(submissionId, accessToken)
           .then(() => {
-            console.log('✅ WebSocket connected')
+            console.log('\u2705 WebSocket connected')
             
             // Subscribe to messages
             if (!unsubscribeMessageRef.current) {
@@ -88,7 +88,7 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
             }
           })
           .catch((wsErr) => {
-            console.warn('⚠️ WebSocket connection failed (chat works via REST API):', wsErr.message)
+            console.warn('\u26a0\ufe0f WebSocket connection failed (chat works via REST API):', wsErr.message)
             // Non-critical - REST API is fully functional
           })
 
@@ -271,16 +271,25 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
                       {msg.attachments && msg.attachments.length > 0 && (
                         <div className="chat__message-attachments">
                           {msg.attachments.map((attachment, idx) => (
-                            <a
-                              key={idx}
-                              href={getClientAttachmentProxyUrl(attachment, submissionId)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="chat__message-attachment"
+                            <div key={idx} className="chat__message-attachment-wrapper">
+                              <button
+                                type="button"
+                                className="chat__message-attachment"
+                                onClick={() => openAttachment(submissionId, attachment.public_id, attachment.format, accessToken)}
+                                title="Open attachment"
                               >
-                              <Paperclip className="chat__attachment-icon" />
-                              <span className="chat__attachment-name">{attachment.name}</span>
-                            </a>
+                                <Paperclip className="chat__attachment-icon" />
+                                <span className="chat__attachment-name">{getAttachmentName(attachment)}</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="chat__attachment-download-btn"
+                                onClick={() => downloadAttachment(submissionId, attachment.public_id, getAttachmentName(attachment), attachment.format, accessToken)}
+                                title="Download attachment"
+                              >
+                                \u2193
+                              </button>
+                            </div>
                           ))}
                         </div>
                       )}
@@ -332,7 +341,7 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
                   className="chat__file-remove"
                   onClick={() => handleRemoveFile(index)}
                 >
-                  ×
+                  \u00d7
                 </span>
               </div>
             ))}
@@ -389,5 +398,3 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
     </div>
   )
 }
-
-
