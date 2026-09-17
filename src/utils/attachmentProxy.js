@@ -57,6 +57,9 @@ async function fetchAttachmentBlob(proxyUrl, token, format) {
   const response = await fetch(proxyUrl, { headers })
 
   if (!response.ok) {
+    console.error("[AttachmentProxy] Response:", response.status, response.statusText);
+    const errBody = await response.text().catch(() => "");
+    console.error("[AttachmentProxy] Body:", errBody);
     throw new Error(`Failed to load attachment: ${response.status}`)
   }
 
