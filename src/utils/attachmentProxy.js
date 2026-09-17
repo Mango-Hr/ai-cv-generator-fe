@@ -51,7 +51,7 @@ export const getAttachmentName = (attachment) =>
 async function fetchAttachmentBlob(proxyUrl, token, format) {
   const headers = {}
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`
+    headers['X-Client-Access-Token'] = token
   }
 
   const response = await fetch(proxyUrl, { headers })
