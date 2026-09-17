@@ -287,7 +287,7 @@ export default function Chat({ submissionId, accessToken, userName = 'You' }) {
                                 onClick={() => downloadAttachment(submissionId, attachment.public_id, getAttachmentName(attachment), attachment.format, accessToken)}
                                 title="Download attachment"
                               >
-                                \u2193
+                                ↓
                               </button>
                             </div>
                           ))}
